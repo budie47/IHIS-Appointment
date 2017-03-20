@@ -26,15 +26,15 @@
         String username = (String)session.getAttribute("username");
 
         
-        String sqlGetClinic = "SELECT * FROM lookup_detail  WHERE `Description`='"+hfcBefore+"'";
+        String sqlGetClinic = "SELECT * FROM adm_lookup_detail  WHERE `Description`='"+hfcBefore+"'";
         ArrayList<ArrayList<String>>getClinic = Conn.getData(sqlGetClinic);
        hfcBefore = getClinic.get(0).get(1);
        
-        String sqlGetDis = "SELECT * FROM lookup_detail  WHERE `Description`='"+disciplineBefore+"'";
+        String sqlGetDis = "SELECT * FROM adm_lookup_detail  WHERE `Description`='"+disciplineBefore+"'";
         ArrayList<ArrayList<String>>getDis = Conn.getData(sqlGetDis);
        disciplineBefore = getDis.get(0).get(1);
        
-        String sqlGetSub = "SELECT * FROM lookup_detail  WHERE `Description`='"+subdisciplineBefore+"'";
+        String sqlGetSub = "SELECT * FROM adm_lookup_detail  WHERE `Description`='"+subdisciplineBefore+"'";
         ArrayList<ArrayList<String>>getSubDis = Conn.getData(sqlGetSub);
        subdisciplineBefore = getSubDis.get(0).get(1);
                 

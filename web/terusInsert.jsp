@@ -57,9 +57,9 @@
                 SimpleDateFormat sdf = new SimpleDateFormat("EEEE");
                 String chosenDayDate = sdf.format(d1);
     
-                String sqlGetHFCCode = "SELECT Detail_Ref_code "
-                + "FROM lookup_detail "
-                + "WHERE Master_Ref_code = '0081' AND Description = '"+hfc+"'";
+                String sqlGetHFCCode = "SELECT Detail_Reference_code "
+                + "FROM adm_lookup_detail "
+                + "WHERE Master_Reference_code = '0081' AND Description = '"+hfc+"'";
                 
                 ArrayList<ArrayList<String>> dataGetHFCCode = Conn.getData(sqlGetHFCCode);
                 

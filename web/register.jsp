@@ -52,7 +52,7 @@
         </div>
         </div>
         </div>
-        <script src="<%=Config.getBase_url(request)%>jsfile/passwordValidationNew.js"></script> 
+
             <script type="text/javascript">
     
         $(document).ready(function(){
@@ -60,59 +60,62 @@
                 var password = $('#PASSWORD').val();
                 var username = $('#USERNAME').val();
                 e.preventDefault();
-                var pValid = passwordValidationNew(password);
+                var pValid = passwordValidation(password);
   
-                if(pValid === "short"){
-                    alert("Error: Password must contain at least six characters and at most ten character!");
-                }
-                 else if(pValid === "nonumber"){
-                    alert("Error: password must contain at least one number (0-9)!");
-                }
-                 else if(pValid === "nolower"){
-                    alert("Error: password must contain at least one lowercase letter (a-z)!");
-                }
-                else if(pValid === "noupper"){
-                    alert("Error: password must contain at least one uppercase letter (A-Z)!");
-                }
-                  else if(pValid === "nospecial"){
-                    alert("Error: password must contain at least one special character!");
-                }
                 
                 var uValid = AllowAlphabet(username);
                 if(uValid === "alphabetonly"){
                     alert("Please Enter only alphabets in text with 10 character");
-                }
-
-                var dataRegister = {
-                    ic_no:$('#IC').val(),
-                    username:username,
-                    password:password,
-                    mobile_no:$('#mobile_no').val(),
-                    email:$('#email').val()
-                };
-                $.ajax({
-                    url:'register_process.jsp',
-                    method:'post',
-                    timeout:10000,
-                    data:dataRegister,
-                    success:function(result){
-                       var message = result.trim();
-                       if(message === "alreadyRegister"){
-                           alert("You already a registered user and just login into the system");
-                       } else if(message === "success"){
-                           alert("You have successfully register!!!");
-                       }else if(message === "fail"){
-                           alert("Register fail! Username has been used..");
-                       }else if(message === "mobile"){
-                           alert("The mobile no has been registered. You have to used other mobile no");
-                       }else if(message === "email"){
-                           alert("The email has been registered. You have to used other email account");
-                       }else if(message === "register"){
-                           alert("You have to register yourself at the UTeM Clinic as First Registration!");
-                       }
+                }else {
+                    
+                    if(pValid === "short"){
+                        alert("Error: Password must contain at least six characters and at most ten character!");
                     }
-                });
-               
+                     else if(pValid === "nonumber"){
+                        alert("Error: password must contain at least one number (0-9)!");
+                    }
+                     else if(pValid === "nolower"){
+                        alert("Error: password must contain at least one lowercase letter (a-z)!");
+                    }
+                    else if(pValid === "noupper"){
+                        alert("Error: password must contain at least one uppercase letter (A-Z)!");
+                    }
+                      else if(pValid === "nospecial"){
+                        alert("Error: password must contain at least one special character!");
+                    } else{
+                        
+                        var dataRegister = {
+                            ic_no:$('#IC').val(),
+                            username:username,
+                            password:password,
+                            mobile_no:$('#mobile_no').val(),
+                            email:$('#email').val()
+                        };
+                        $.ajax({
+                            url:'register_process.jsp',
+                            method:'post',
+                            timeout:10000,
+                            data:dataRegister,
+                            success:function(result){
+                               var message = result.trim();
+                               if(message === "alreadyRegister"){
+                                   alert("You already a registered user and just login into the system");
+                               } else if(message === "success"){
+                                   alert("You have successfully register!!!");
+                               }else if(message === "fail"){
+                                   alert("Register fail! Username has been used..");
+                               }else if(message === "mobile"){
+                                   alert("The mobile no has been registered. You have to used other mobile no");
+                               }else if(message === "email"){
+                                   alert("The email has been registered. You have to used other email account");
+                               }else if(message === "register"){
+                                   alert("You have to register yourself at the UTeM Clinic as First Registration!");
+                               }
+                            }
+                        });
+                    }
+                }
+     
             });
         });
         </script>
