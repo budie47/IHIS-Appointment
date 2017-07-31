@@ -21,22 +21,25 @@
     }
 </script>
 <%
-Conn Conn = new Conn();
+    Conn Conn = new Conn();
     String username = (String) session.getAttribute("username");
     String hfc = (String) session.getAttribute("HEALTH_FACILITY_CODE");
     String name = (String) session.getAttribute("USER_NAME");
     String title = (String) session.getAttribute("OCCUPATION_CODE");
     String discipline = (String) session.getAttribute("DISCIPLINE_CODE");
     String subdiscipline = (String) session.getAttribute("SUBDISCIPLINE_CODE");
-   String searchDateAvailability = request.getParameter("date");
-   String searchDoctorAvailability = request.getParameter("doctor");
+
     String hfcSession = (String) session.getAttribute("sessionHFC");
-   //String searchDateAvailability ="2017-03-21";
- // String searchDoctorAvailability = "budie basri";
-//    
-if(hfc == null || hfc == ""){
-    hfc = hfcSession;
-}
+
+    String searchDoctorAvailability = request.getParameter("doctor");
+    String searchDateAvailability = request.getParameter("date");
+//    String searchDateAvailability = "2017-05-09";
+//    String searchDoctorAvailability = "ahmed abdallah sheikh";
+
+//   
+    if (hfc == null || hfc == "") {
+        hfc = hfcSession;
+    }
     String hfcCode = "SELECT Detail_Ref_code "
             + "FROM lookup_detail "
             + "WHERE Master_Ref_code = '0081' AND Description = '" + hfc + "'";
@@ -105,9 +108,8 @@ if(hfc == null || hfc == ""){
             + "WHERE OCCUPATION_CODE = 'DOCTOR' OR OCCUPATION_CODE = '002'"
             + "ORDER BY LCASE(USER_NAME) ASC)doc "
             + "where doc.USER_ID=pdr.user_id AND pdr.status='active' AND "
-            + "DATE(now()) BETWEEN DATE(start_date) AND DATE(end_date) AND doc.HEALTH_FACILITY_CODE ='"+hfc+"'  ";
+            + "DATE(now()) BETWEEN DATE(start_date) AND DATE(end_date) AND doc.HEALTH_FACILITY_CODE ='" + hfc + "'  ";
     ArrayList<ArrayList<String>> dataDoctorAvailable = Conn.getData(sqlDoctorAvailable);
-
 
     String sqlAppointment = "SELECT lookSub.appointment_date, lookSub.start_time, lookSub.pmi_no, lookSub.patient_name, "
             + "lookSub.staff_name ,lookSub.discipline_name, lds.Description AS subdipline_name, lookSub.appointment_type, lookSub.ID_NO, lookSub.status, lookSub.canceled_reason "
@@ -157,6 +159,7 @@ if(hfc == null || hfc == ""){
                             String startDateFromDB = dataDoctorAvailable.get(i).get(4);
                             String endDateFromDB = dataDoctorAvailable.get(i).get(5);
                             String dateCompareDay = searchDateAvailability;
+                            
                             Date startDateDB = formatter.parse(startDateFromDB);
                             Date endDateDB = formatter.parse(endDateFromDB);
                             Date CompareDay = formatter.parse(dateCompareDay);
@@ -168,7 +171,6 @@ if(hfc == null || hfc == ""){
                             SimpleDateFormat df = new SimpleDateFormat("EEEE");
                             String newCompareDay = df.format(CompareDay);
 
-                         
 
                         %>
                         <tr id="tbl_<%=i%>">
@@ -187,28 +189,28 @@ if(hfc == null || hfc == ""){
                         }
                         String doctorAvailablity = "select * from pms_staff_leave "
                                 + "where status='approve' AND "
-                                + "'" + searchDateAvailability + "' BETWEEN DATE(start_leave_date) "
+                                + "'" + CompareDay + "' BETWEEN DATE(start_leave_date) "
                                 + "AND DATE(end_leave_date) AND user_id='" + doctorId + "' ";
                         ArrayList<ArrayList<String>> dataDoctorAvailablity = Conn.getData(doctorAvailablity);
 //out.print(doctorAvailablity);
                         String sqlDutyDoctor = "SELECT doc.*,DATE(pdr.start_date),DATE(pdr.end_date) "
                                 + "from pms_duty_roster pdr, "
                                 + "(SELECT USER_ID,LCASE(USER_NAME),OCCUPATION_CODE "
-                                + "FROM adm_user "
-                                + "WHERE OCCUPATION_CODE = 'DOCTOR' AND USER_ID = '" + doctorId + "' "
+                                + "FROM adm_users "
+                                + "WHERE OCCUPATION_CODE = '002' AND USER_ID = '" + doctorId + "' "
                                 + "ORDER BY LCASE(USER_NAME) ASC)doc "
                                 + "where doc.USER_ID=pdr.user_id AND pdr.status='active' AND "
-                                + "DATE('" + searchDateAvailability + "') BETWEEN DATE(start_date) AND DATE(end_date) ";
+                                + "DATE('" + searchDateAvailability + "') BETWEEN DATE(start_date) AND DATE(end_date) AND hfc_cd = '"+hfc+"'";
                         ArrayList<ArrayList<String>> dataDutyDoctor = Conn.getData(sqlDutyDoctor);
 
-                                                                  //out.print(sqlDutyDoctor);
-                        String sqlCheckHoliday = "SELECT * FROM pms_holiday WHERE DATE(holiday_date) = '" + searchDateAvailability + "' ";
+                        //int(sqlDutyDoctor);
+                        String sqlCheckHoliday = "SELECT * FROM pms_holiday WHERE DATE(holiday_date) = '" + CompareDay + "' ";
                         ArrayList<ArrayList<String>> dataCheckHoliday = Conn.getData(sqlCheckHoliday);
+//out.print(sqlCheckHoliday);
 
                         String sqlCompareDay = "SELECT * FROM pms_clinic_day WHERE hfc_cd = '" + hfc + "' AND day_cd = '" + newCompareDay + "' ";
                         ArrayList<ArrayList<String>> dataCompareDay = Conn.getData(sqlCompareDay);
-//out.print(sqlCompareDay);
-
+//out.print("yang nie plaing betul :    ----   "+doctorAvailablity);
                         if (dataCheckHoliday.size() == 0) {
                             if (dataCompareDay.size() > 0) {
                                 //                                                    out.print(dataDutyDoctor.size());
@@ -216,14 +218,15 @@ if(hfc == null || hfc == ""){
 
                                     if (dataDoctorAvailablity.size() > 0) {
 
+
                                         for (int index = 0; index < dataDoctorAvailablity.size(); index++) {
                     %>
                     <td><center>not available</center></td>
-                    <td><center><%=dataDoctorAvailablity.get(index).get(7)%></center></td> 
+                    <td><center><%=dataDoctorAvailablity.get(index).get(7) %></center></td> 
                     <td><center>-</center></td> 
                         <%
-                                                        }
-                                                    } else { %>
+                            }
+                        } else { %>
                     <td><center>available</center></td>
                     <td><center>on duty</center></td> 
                         <%
@@ -248,24 +251,24 @@ if(hfc == null || hfc == ""){
                         %> 
                     </center>
                     </td>
-                    <% }
-                                         } else { %><td><center>not available</center></td>
+                        <% }
+                    } else { %><td><center>not available</center></td>
                     <td><center>not in duty roster</center></td> 
                     <td><center>-</center></td> <%
-                                               //                                                      out.print(dataDutyDoctor.get(0).get(1)); 
-                                           }
-                                       } else { %>
+                            //                                                      out.print(dataDutyDoctor.get(0).get(1)); 
+                        }
+                    } else { %>
                     <td><center>not available</center></td>
                     <td><center>clinic off</center></td> 
                     <td><center>-</center></td>  <%
-                                           }
-                                       } else {%>
+                        }
+                    } else {%>
 
                     <td><center>not available</center></td>
-                    <td><center><%=dataCheckHoliday.get(0).get(2)%></center></td> 
+                    <td><center><%=dataCheckHoliday.get(0).get(2)%> </center></td> 
                     <td><center>-</center></td>  <%
 
-                                           }%>
+                        }%>
                     <td><center><%=dateStart%> <% out.print('-');%><%=dateEnd%></center></td>  
                     </tr>
                     <%}%>

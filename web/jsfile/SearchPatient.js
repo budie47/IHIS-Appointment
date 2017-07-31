@@ -12,14 +12,14 @@ $(document).ready(function(){
                 icNo:$('#icNoSearch').val(),
                 idNo:$('#idNoSearch').val()
             };
-
+console.log(dataSearchPatient);
             $.ajax({
                 url:'adminSearchAppointmentAjax.jsp',
                 method:'post',
                 data:dataSearchPatient,
                 timeout:10000,
                 success:function(result){
-                    //console.log(result);
+                   // console.log(result);
                     if(result===""){
                         alert("Error");
                     }else{

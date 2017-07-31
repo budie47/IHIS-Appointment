@@ -17,6 +17,7 @@
         String holiday_type = request.getParameter("appTo");
         String status = request.getParameter("status");
         String username = (String)session.getAttribute("username");
+        String hfc = (String)session.getAttribute("HEALTH_FACILITY_CODE");
         
         
 //        out.print(state_code);

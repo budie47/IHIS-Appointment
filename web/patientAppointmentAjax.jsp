@@ -36,22 +36,23 @@ Conn Conn = new Conn();
     String title = (String) session.getAttribute("OCCUPATION_CODE");
 
     String hfcSession = (String) session.getAttribute("sessionHFC");
-    String hfc = (String) session.getAttribute("sessionHFC");
+    String hfcName = (String) session.getAttribute("sessionHFC");
 
-    //out.print(hfcSession);
-    String hfcCode = "SELECT Detail_Ref_code, Description "
-            + "FROM lookup_detail "
-            + "WHERE Master_Ref_code = '0081' AND Description = '" + hfcSession + "' ";
+    
+    String hfcCode = "SELECT Detail_Reference_code, Description "
+            + "FROM adm_lookup_detail "
+            + "WHERE Master_Reference_code = '0081' AND Description = '" + hfcSession + "' ";
     ArrayList<ArrayList<String>> dataHFCCode = Conn.getData(hfcCode);
 
-    String hfcCD;
+    String hfc;
 
     if (dataHFCCode.size() > 0) {
-        hfcCD = dataHFCCode.get(0).get(0);
+        hfc = dataHFCCode.get(0).get(0);
+             session.setAttribute("HEALTH_FACILITY_CODE", hfc);
     } else {
-        hfcCD = null;
+        hfc = null;
     }
-    
+    //out.print(hfc);
     //out.print(hfcCD);
     String sqlhfc = "SELECT DISTINCT state_code "
             + "FROM pms_duty_roster "
@@ -81,7 +82,7 @@ Conn Conn = new Conn();
             + "FROM lookup_detail ld, "
             + "(SELECT state_code, hfc_cd, day_cd, discipline_cd, subdiscipline_cd, start_time, end_time,  status "
             + "FROM pms_clinic_day)t "
-            + "WHERE t.state_code=ld.`Detail_Ref_code` AND ld.`Master_Ref_code` = '0002'  AND hfc_cd= '" + hfcCD + "' AND t.status='active')b "
+            + "WHERE t.state_code=ld.`Detail_Ref_code` AND ld.`Master_Ref_code` = '0002'  AND hfc_cd= '" + hfc + "' AND t.status='active')b "
             + "WHERE hfc.Master_Ref_Code='0081' AND hfc.Detail_Ref_code = b.hfc_cd)c "
             + "WHERE al.`Master_Ref_code`='0072' AND al.`Detail_Ref_code` = c.discipline_cd)d "
             + "WHERE sub.`Master_Ref_code` = '0071' AND sub.`Detail_Ref_code` = d.subdiscipline_cd "
@@ -126,38 +127,30 @@ Conn Conn = new Conn();
     ArrayList<ArrayList<String>> dataPatientDetails = Conn.getData(sqlPatientDetails);
 
     //out.print(dataPatientDetails.get(0).get(0));
-    String sqlDoctorAvailable = "SELECT doc.*,DATE(pdr.start_date),DATE(pdr.end_date) "
+    String sqlDoctorAvailable ="SELECT doc.*,DATE(pdr.start_date),DATE(pdr.end_date) "
             + "from pms_duty_roster pdr, "
             + "(SELECT USER_ID,LCASE(USER_NAME),OCCUPATION_CODE "
-            + "FROM adm_user "
-            + "WHERE OCCUPATION_CODE = 'DOCTOR'"
+            + "FROM adm_users "
+            + "WHERE OCCUPATION_CODE = 'DOCTOR' OR OCCUPATION_CODE = '002'"
             + "ORDER BY LCASE(USER_NAME) ASC)doc "
             + "where doc.USER_ID=pdr.user_id AND pdr.status='active' AND "
-            + "DATE(now()) BETWEEN DATE(start_date) AND DATE(end_date) ";
+            + "DATE(now()) BETWEEN DATE(start_date) AND DATE(end_date) AND pdr.hfc_cd = '"+hfc+"'";
     ArrayList<ArrayList<String>> dataDoctorAvailable = Conn.getData(sqlDoctorAvailable);
     
     //out.print(dataPMI);
     //out.print(hfcCD);
 
     String sqlAppointment = 
-            "SELECT lookSub.appointment_date, lookSub.start_time, lookSub.pmi_no, lookSub.patient_name," 
-            + " LCASE(lookSub.staff_name) ,lookSub.discipline_name, lds.Description" 
-            + " AS subdipline_name, lookSub.appointment_type, lookSub.ID_NO, lookSub.status, lookSub.canceled_reason" 
-            + " FROM lookup_detail lds," 
-            + "( SELECT lookDis.appointment_date, lookDis.start_time, lookDis.pmi_no, lookDis.PATIENT_NAME" 
-            + " AS patient_name, lookDis.USER_NAME AS staff_name ,ld.Description AS discipline_name," 
-            + "lookDis.subdiscipline, lookDis.appointment_type, lookDis.ID_NO, lookDis.status, lookDis.canceled_reason "
-            + " FROM lookup_detail ld," 
-            + "(SELECT DATE(pa.appointment_date) AS appointment_date, TIME(pa.start_time)" 
-            + " AS start_time, pa.pmi_no, pb.PATIENT_NAME, au.USER_NAME, pa.discipline, pa.subdiscipline, pa.appointment_type,"
-            + "pb.ID_NO, pa.status, pa.canceled_reason"
-            + " FROM pms_appointment pa, pms_patient_biodata pb, adm_user au "
-            + " WHERE pa.pmi_no = pb.PMI_NO AND pa.userid = au.USER_ID AND pa.pmi_no = '"+dataPMI+"' AND pa.hfc_cd = '"+hfcCD+"'" 
-            + " ORDER BY pa.appointment_date DESC, pa.start_time ASC) lookDis "
-            + " WHERE lookDis.discipline=ld.Detail_Ref_code "
-            + " AND ld.Master_Ref_code = '0072') lookSub WHERE lds.Master_Ref_code = '0071' "
-            + " AND lookSub.subdiscipline=lds.Detail_Ref_code";
-     
+ "SELECT lookSub.appointment_date, lookSub.start_time, lookSub.pmi_no, lookSub.patient_name, lookSub.staff_name ,lookSub.discipline_name, lds.Description "
+            + "AS subdipline_name, lookSub.appointment_type, lookSub.ID_NO, lookSub.status, lookSub.canceled_reason FROM adm_lookup_detail lds,"
+            + " ( SELECT lookDis.appointment_date, lookDis.start_time, lookDis.pmi_no, lookDis.PATIENT_NAME AS patient_name, lookDis.USER_NAME AS staff_name ,ld.Description AS discipline_name, "
+            + "lookDis.subdiscipline, lookDis.appointment_type, lookDis.ID_NO, lookDis.status, lookDis.canceled_reason FROM adm_lookup_detail ld, "
+            + "( SELECT DATE(pa.appointment_date) AS appointment_date, TIME(pa.start_time) AS start_time, pa.pmi_no, LCASE(pb.PATIENT_NAME) AS PATIENT_NAME, LCASE(au.USER_NAME) AS USER_NAME, "
+            + "pa.discipline, pa.subdiscipline, pa.appointment_type, pb.ID_NO, pa.status, pa.canceled_reason FROM pms_appointment pa, pms_patient_biodata pb, adm_users au "
+            + "WHERE pa.pmi_no = pb.PMI_NO AND pa.userid = au.USER_ID AND pa.hfc_cd = '04010101' AND pb.`PMI_NO` = '"+dataPMI+"'  "
+            + "ORDER BY pa.appointment_date DESC, pa.start_time ASC ) lookDis WHERE lookDis.discipline=ld.Detail_Reference_code AND ld.Master_Reference_code = '0072' AND ld.hfc_cd = '04010101') lookSub "
+            + "WHERE lds.Master_Reference_code = '0071' AND lookSub.subdiscipline=lds.Detail_Reference_code AND lds.hfc_cd= '04010101'";
+     //out.print(sqlAppointment);
     ArrayList<ArrayList<String>> dataAppointment = Conn.getData(sqlAppointment);
 
 
@@ -601,15 +594,15 @@ Conn Conn = new Conn();
                                                 <select class="form-control" id="doctorApp" name="appDoc" required>
                                                     <option></option>
                                                     <%  
-                                                       String sqlDoc = "SELECT * "
-                                                                + "FROM adm_user "
-                                                                + "WHERE HEALTH_FACILITY_CODE = '" + hfcSession + "' AND OCCUPATION_CODE = 'DOCTOR'";
+                                                       String sqlDoc = "SELECT USER_ID,USER_NAME "
+                                                                + "FROM adm_users "
+                                                                + "WHERE HEALTH_FACILITY_CODE = '" + hfc + "' AND OCCUPATION_CODE = '002'";
                                                         ArrayList<ArrayList<String>> dataDoctor = Conn.getData(sqlDoc);
 
                                                         if (e34 == null) {
                                                             if (dataDoctor.size() > 0) {
                                                                 for (int i = 0; i < dataDoctor.size(); i++) {%>
-                                                    <option value="<%=dataDoctor.get(i).get(0)%>"><%=dataDoctor.get(i).get(3)%></option>
+                                                    <option value="<%=dataDoctor.get(i).get(0)%>"><%=dataDoctor.get(i).get(1)%></option>
                                                     <% }
                                                         }
                                                     } else {
@@ -617,7 +610,7 @@ Conn Conn = new Conn();
                                                             if (e34.equals(dataDoctor.get(i).get(0))) {%>
                                                     <option value="<%= e34%>" selected><%=dataDoctor.get(i).get(3)%></option>
                                                     <%} else {%>
-                                                    <option value="<%= dataDoctor.get(i).get(0)%>"><%=dataDoctor.get(i).get(3)%></option> <%
+                                                    <option value="<%= dataDoctor.get(i).get(0)%>"><%=dataDoctor.get(i).get(1)%></option> <%
                                                                 }
                                                             }
 
@@ -821,7 +814,7 @@ Conn Conn = new Conn();
                                                     <td class="incoming_date_area"><center><%=dataAppointment.get(i).get(7)%></center></td>
                                                     <td class="incoming_date_area">
                                                     <center>
-                                                    <button class="btn btn-xs btn-primary" onClick="return myFunction('<%=dataAppointment.get(i).get(2)%>','<%=hfcCD%>','<%=dataAppointment.get(i).get(0)%>')">Cancel</button>
+                                                    <button class="btn btn-xs btn-primary" onClick="return myFunction('<%=dataAppointment.get(i).get(2)%>','<%=hfc%>','<%=dataAppointment.get(i).get(0)%>')">Cancel</button>
                                                         
                                                         <script type="text/javascript">
                                                         
@@ -889,7 +882,7 @@ Conn Conn = new Conn();
                                                     <!--<td><center><%=dataAppointment.get(i).get(9)%></center></td>-->
                                                     <td>
                                                     <center>
-                                                        <button disabled="disabled" class="btn btn-xs btn-primary" onClick="location.href = 'patientCancelAppointment.jsp?e27=<%=dataAppointment.get(i).get(2)%>&e48=<%=hfcCD%>&e32=<%=dataAppointment.get(i).get(0)%>'">Cancel</button>
+                                                        <button disabled="disabled" class="btn btn-xs btn-primary" onClick="location.href = 'patientCancelAppointment.jsp?e27=<%=dataAppointment.get(i).get(2)%>&e48=<%=hfc%>&e32=<%=dataAppointment.get(i).get(0)%>'">Cancel</button>
                                                     </center>
                                                     </td>
                                                     <td><center><%=dataAppointment.get(i).get(10)%></center></td>
@@ -907,7 +900,7 @@ Conn Conn = new Conn();
                                                     <!--<td><center><%=dataAppointment.get(i).get(9)%></center></td>-->
                                                     <td>
                                                     <center>
-                                                        <button disabled="disabled" class="btn btn-xs btn-primary" onClick="location.href = 'patientCancelAppointment.jsp?e27=<%=dataAppointment.get(i).get(2)%>&e48=<%=hfcCD%>&e32=<%=dataAppointment.get(i).get(0)%>'">Cancel</button>
+                                                        <button disabled="disabled" class="btn btn-xs btn-primary" onClick="location.href = 'patientCancelAppointment.jsp?e27=<%=dataAppointment.get(i).get(2)%>&e48=<%=hfc%>&e32=<%=dataAppointment.get(i).get(0)%>'">Cancel</button>
                                                     </center>
                                                     </td>
                                                     <td><center>Not Applicable</center></td>

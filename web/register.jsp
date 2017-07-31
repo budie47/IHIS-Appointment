@@ -97,6 +97,7 @@
                             timeout:10000,
                             data:dataRegister,
                             success:function(result){
+                                console.log(result);
                                var message = result.trim();
                                if(message === "alreadyRegister"){
                                    alert("You already a registered user and just login into the system");

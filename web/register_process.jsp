@@ -20,6 +20,13 @@
         String password = request.getParameter("password");
         String email = request.getParameter("email");
         String mobile_no = request.getParameter("mobile_no");
+        
+//                String ic_no = "950706025269";
+//        String username = "piansaja";
+//        String password ="abc123";
+//        String email ="pian46@gmail.com";
+//        String mobile_no = "0172123124";
+        
 //        String name = request.getParameter("name");
 //        String birth_date = request.getParameter("birth_date");
 //        String idtype = request.getParameter("idtype");
@@ -29,7 +36,7 @@
 
         
         String sql = "SELECT PATIENT_NAME "
-                + "FROM emedica.pms_patient_biodata "
+                + "FROM pms_patient_biodata "
                 + "WHERE NEW_IC_NO = '" + ic_no + "'";
         ArrayList<ArrayList<String>> data = Conn.getData(sql);
         
@@ -40,7 +47,7 @@
         if (data.size() > 0) 
         { 
             String sql1 = "SELECT st.ic_no "
-                    + "FROM emedica.adm_signup_tbl st "
+                    + "FROM adm_signup_tbl st "
                     + "WHERE st.ic_no = '" + ic_no + "'";
             ArrayList<ArrayList<String>> data1 = Conn.getData(sql1);
             
@@ -52,14 +59,14 @@
             else 
             {
                 String sql2 = "SELECT username, mobile_no, email "
-                         + "FROM emedica.adm_signup_tbl";
+                         + "FROM adm_signup_tbl";
                 ArrayList<ArrayList<String>> data2 = Conn.getData(sql2);
                 
                 boolean uname = false;
                 boolean mobile = false;
                 boolean mail = false;
                 boolean insert = true;
-
+                out.print(sql2);
                 for(int i=0; i<data2.size(); i++)
                 {
                     if(data2.get(i).get(0).equals(username))
@@ -81,10 +88,6 @@
                                 mail = true;   
                                 insert = false;
                             } 
-//                            else
-//                            {
-////                                insert = true;
-//                            }
                         }
                     } 
 

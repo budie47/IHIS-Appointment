@@ -7,7 +7,9 @@
 
 $(document).ready(function () {
     var role;
-
+                          $(function(){
+                $('#datepicker').datepicker({dateFormat:'dd/mm/yy'});
+            });
     //function for add appointment
     function terusInsert(data) {
         $.ajax({

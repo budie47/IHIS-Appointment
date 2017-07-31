@@ -43,7 +43,7 @@ function searchByDoctor(){
      var dataSearch = {
             searchAppointmentDoctor: $('#searchAppointmentDoctor').val()
         };
-        //console.log(dataSearch);
+        console.log(dataSearch);
         $.ajax({
             url:'AppointmentViewDoctor.jsp',
             method:'post',
@@ -89,6 +89,10 @@ $(document).ready(function(){
         e.preventDefault();
         $('#viewAppointmentTable').load('medicalStaffDoctorAjax.jsp #viewAppointmentTable');
     });
-    
+              $(function(){
+                $('#searchAppointmentDate').datepicker({dateFormat:'dd/mm/yy'});
+            });
+
+            
 });
 

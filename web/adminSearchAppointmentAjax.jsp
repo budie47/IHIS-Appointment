@@ -14,9 +14,12 @@
 
 <%
     Conn Conn = new Conn();
-    String pmiNo = request.getParameter("pmiNo");
-    String icNo = request.getParameter("icNo");
-    String idNo = request.getParameter("idNo");
+    String pmiNo = request.getParameter("pmiNo").toString();
+    String icNo = request.getParameter("icNo").toString();
+    String idNo = request.getParameter("idNo").toString();
+//    String pmiNo = "9504050251851";
+//    String icNo = "";
+//    String idNo = "";
     
   String sql = "SELECT * "
  + "FROM pms_patient_biodata "

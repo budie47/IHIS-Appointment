@@ -73,32 +73,25 @@ Conn Conn = new Conn();
 
     String sql = "SELECT lm.Master_Reference_code, ld.`Master_Reference_code`, ld.Detail_Reference_code, pmsh.*, ld.Description "
             + "FROM adm_lookup_master lm, adm_lookup_detail ld, pms_holiday pmsh "
-            + "WHERE lm.`Master_Reference_code` = ld.`Master_Reference_code` AND ld.`Master_Reference_code` = '0002' "
-            + "AND ld.`Detail_Reference_code` = pmsh.state_code "
-            + "ORDER BY ld.`Description` ASC, pmsh.holiday_date ASC, pmsh.status DESC";
+            + "WHERE lm.`Master_Reference_code` = ld.`Master_Reference_code` AND ld.`Master_Reference_code` = '0002' AND ld.`Detail_Reference_code` = pmsh.state_code AND ld.hfc_cd = '"+hfc+"' "
+            + "ORDER BY pmsh.holiday_date ASC, ld.`Description` ASC";
     ArrayList<ArrayList<String>> data = Conn.getData(sql);
 
-    String sqlDisplayClinic = "SELECT d.*, sub.description AS subdiscipline_name "
-            + "FROM lookup_detail sub, "
-            + "(SELECT c.*, al.description AS discipline_name "
-            + "FROM lookup_detail al, "
-            + "(SELECT b.*,hfc.description AS hfc_name "
-            + "FROM lookup_detail hfc,"
-            + "(SELECT t.*,ld.description AS state_name "
-            + "FROM lookup_detail ld, "
-            + "(SELECT state_code, hfc_cd, day_cd, discipline_cd, subdiscipline_cd, start_time, end_time,  status "
-            + "FROM pms_clinic_day)t "
-            + "WHERE t.state_code=ld.`Detail_Reference_code` AND ld.`Master_Reference_code` = '0002' AND hfc_cd= '" + hfcCD + "')b "
-            + "WHERE hfc.Master_Reference_Code='0081' AND hfc.Detail_Reference_code = b.hfc_cd)c "
-            + "WHERE al.`Master_Reference_code`='0072' AND al.`Detail_Reference_code` = c.discipline_cd)d "
-            + "WHERE sub.`Master_Reference_code` = '0071' AND sub.`Detail_Reference_code` = d.subdiscipline_cd "
-            + "ORDER BY state_name ASC";
+    String sqlDisplayClinic = "SELECT d.*, sub.description AS subdiscipline_name FROM adm_lookup_detail sub,"
+            + " (SELECT c.*, al.description AS discipline_name FROM adm_lookup_detail al, "
+            + "(SELECT b.*,hfc.description AS hfc_name FROM adm_lookup_detail hfc,"
+            + " (SELECT t.*,ld.description AS state_name FROM adm_lookup_detail ld,  "
+            + "(SELECT state_code, hfc_cd, day_cd, discipline_cd, subdiscipline_cd, start_time, end_time, status FROM pms_clinic_day WHERE hfc_cd = '"+hfc+"' )t "
+            + " WHERE t.state_code=ld.`Detail_Reference_code` AND ld.`Master_Reference_code` = '0002' AND ld.hfc_cd = '"+hfc+"')b  "
+            + "WHERE hfc.Master_Reference_code='0081' AND hfc.Detail_Reference_code = b.hfc_cd AND hfc.hfc_cd = '"+hfc+"')c"
+            + "  WHERE al.`Master_Reference_code`='0072' AND al.`Detail_Reference_code` = c.discipline_cd AND al.hfc_cd = '"+hfc+"')d  "
+            + "WHERE sub.`Master_Reference_code` = '0071' AND sub.`Detail_Reference_code` = d.subdiscipline_cd  AND sub.hfc_cd = '"+hfc+"'"
+            + " ORDER BY state_name ASC";
     ArrayList<ArrayList<String>> dataClinicDay = Conn.getData(sqlDisplayClinic);
 
-    String sqlDisplayRoster = "SELECT LCASE(ad.USER_NAME) as patientName, ad.USER_ID, dr.hfc_cd, DATE(dr.start_date) AS start_date, DATE(dr.end_date) AS end_date, "
-            + "TIME(dr.start_time) AS start_time, TIME(dr.end_time) AS end_time, dr.roster_category, dr.status "
+    String sqlDisplayRoster =  "SELECT LCASE(ad.USER_NAME) as patientName, ad.USER_ID, dr.hfc_cd, DATE(dr.start_date) AS start_date, DATE(dr.end_date) AS end_date, TIME(dr.start_time) AS start_time, TIME(dr.end_time) AS end_time, dr.roster_category, dr.status "
             + "FROM adm_users ad, pms_duty_roster dr "
-            + "WHERE ad.USER_ID = dr.user_id";
+            + "WHERE ad.USER_ID = dr.user_id AND dr.hfc_cd = '"+hfc+"'";
     ArrayList<ArrayList<String>> dataClinicRoster = Conn.getData(sqlDisplayRoster);
 
     String sqlStaffLeave = "SELECT user_id, date(start_leave_date), date(end_leave_date), leave_reason, status "
@@ -110,27 +103,21 @@ Conn Conn = new Conn();
             + "from pms_duty_roster pdr, "
             + "(SELECT USER_ID,LCASE(USER_NAME),OCCUPATION_CODE "
             + "FROM adm_users "
-            + "WHERE OCCUPATION_CODE = 'DOCTOR'"
+            + "WHERE OCCUPATION_CODE = 'DOCTOR' OR OCCUPATION_CODE = '002'"
             + "ORDER BY LCASE(USER_NAME) ASC)doc "
             + "where doc.USER_ID=pdr.user_id AND pdr.status='active' AND "
-            + "DATE(now()) BETWEEN DATE(start_date) AND DATE(end_date) ";
+            + "DATE(now()) BETWEEN DATE(start_date) AND DATE(end_date) AND pdr.hfc_cd = '"+hfc+"'";
     ArrayList<ArrayList<String>> dataDoctorAvailable = Conn.getData(sqlDoctorAvailable);
 
-    String sqlAppointment = "SELECT lookSub.appointment_date, lookSub.start_time, lookSub.pmi_no, lookSub.patient_name, "
-            + "lookSub.staff_name ,lookSub.discipline_name, lds.Description AS subdipline_name, lookSub.appointment_type, lookSub.ID_NO, lookSub.status, lookSub.canceled_reason "
-            + "FROM adm_lookup_detail lds, "
-            + "(SELECT lookDis.appointment_date, lookDis.start_time, lookDis.pmi_no, lookDis.PATIENT_NAME AS patient_name, "
-            + "lookDis.USER_NAME AS staff_name ,ld.Description AS discipline_name, lookDis.subdiscipline, lookDis.appointment_type, lookDis.ID_NO, lookDis.status, lookDis.canceled_reason "
-            + "FROM adm_lookup_detail ld, "
-            + "(SELECT DATE(pa.appointment_date) AS appointment_date, TIME(pa.start_time) AS start_time, pa.pmi_no, LCASE(pb.PATIENT_NAME) AS PATIENT_NAME, "
-            + "LCASE(au.USER_NAME) AS USER_NAME, pa.discipline, pa.subdiscipline, pa.appointment_type, pb.ID_NO, pa.status, pa.canceled_reason "
-            + "FROM pms_appointment pa, pms_patient_biodata pb, adm_users au "
-            + "WHERE pa.pmi_no = pb.PMI_NO AND pa.userid = au.USER_ID "
-            + "ORDER BY pa.appointment_date DESC, start_time ASC) lookDis "
-            + "WHERE lookDis.discipline=ld.Detail_Reference_code "
-            + "AND ld.Master_Reference_code = '0072') lookSub "
-            + "WHERE lds.Master_Reference_code = '0071' "
-            + "AND lookSub.subdiscipline=lds.Detail_Reference_code";
+    String sqlAppointment = "SELECT lookSub.appointment_date, lookSub.start_time, lookSub.pmi_no, lookSub.patient_name, lookSub.staff_name ,lookSub.discipline_name, lds.Description  "
+             + "AS subdipline_name, lookSub.appointment_type, lookSub.ID_NO, lookSub.status, lookSub.canceled_reason FROM adm_lookup_detail lds,  "
+             + "( SELECT lookDis.appointment_date, lookDis.start_time, lookDis.pmi_no, lookDis.PATIENT_NAME AS patient_name, lookDis.USER_NAME AS staff_name ,ld.Description AS discipline_name, "
+             + "lookDis.subdiscipline, lookDis.appointment_type, lookDis.ID_NO, lookDis.status, lookDis.canceled_reason FROM adm_lookup_detail ld, "
+             + "( SELECT DATE(pa.appointment_date) AS appointment_date, TIME(pa.start_time) AS start_time, pa.pmi_no, LCASE(pb.PATIENT_NAME)  AS PATIENT_NAME, "
+             + "LCASE(au.USER_NAME) AS USER_NAME, pa.discipline, pa.subdiscipline, pa.appointment_type, pb.ID_NO, pa.status, pa.canceled_reason  FROM pms_appointment pa, pms_patient_biodata pb, adm_users au"
+             + " WHERE pa.pmi_no = pb.PMI_NO AND pa.userid = au.USER_ID AND pa.hfc_cd = '"+hfc+"'  "
+             + " ORDER BY pa.appointment_date DESC, pa.start_time ASC ) lookDis WHERE lookDis.discipline=ld.Detail_Reference_code  AND ld.Master_Reference_code = '0072' AND ld.hfc_cd = '"+hfc+"') lookSub "
+             + "WHERE lds.Master_Reference_code = '0071' AND lookSub.subdiscipline=lds.Detail_Reference_code AND lds.hfc_cd= '"+hfc+"'";
     ArrayList<ArrayList<String>> dataAppointment = Conn.getData(sqlAppointment);
 
  
@@ -1116,8 +1103,7 @@ Conn Conn = new Conn();
         
         <script type="text/javascript">
             $(document).ready(function(){
-                $('#startDateLeave').datepicker({dateFormat:'dd/mm/yy'});
-                $('#endDateLeave').datepicker({dateFormat:'dd/mm/yy'});
+               
                 $('#dateDoctorA').datepicker({dateFormat:'dd/mm/yy'});
                 $('#datepicker').datepicker({dateFormat:'dd/mm/yy'});
                  $('#searchAppointmentDate').datepicker({dateFormat:'dd/mm/yy'});

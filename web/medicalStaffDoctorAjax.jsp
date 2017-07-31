@@ -34,37 +34,41 @@ Conn Conn = new Conn();
     String hfc = (String) session.getAttribute("HEALTH_FACILITY_CODE");
     String name = (String) session.getAttribute("USER_NAME");
     String title = (String) session.getAttribute("OCCUPATION_CODE");
-    String hfcCD;
-    String discipline;
-    String subdiscipline;
+    String hfcCD = "";
+    String discipline = "";
+    String subdiscipline = "";
+    
+    out.print("username: "+username);
+    out.print("|  hfc "+username);
+    out.print("| title "+username);
 
 //    out.print(username);
     String sqlDis = "select discipline_cd,subdiscipline_cd from pms_duty_roster where user_id = '" + username + "'";
-    ArrayList<ArrayList<String>> disCode = Conn.getData(sqlDis);
-    discipline = disCode.get(0).get(0);
-    subdiscipline = disCode.get(0).get(1);
+//    ArrayList<ArrayList<String>> disCode = Conn.getData(sqlDis);
+//    discipline = disCode.get(0).get(0);
+//    subdiscipline = disCode.get(0).get(1);
 
     String sqlDisDesc = "select Description from adm_lookup_detail where Detail_Reference_code = '" + discipline + "' AND Master_Reference_code = '0033'";
-    ArrayList<ArrayList<String>> disDesc = Conn.getData(sqlDisDesc);
-    discipline = disDesc.get(0).get(0);
+//    ArrayList<ArrayList<String>> disDesc = Conn.getData(sqlDisDesc);
+//    discipline = disDesc.get(0).get(0);
     //out.print(sqlDisDesc);
 
     String sqlSubDesc = "select Description from adm_lookup_detail where Master_Reference_code = '0071' AND Detail_Reference_code = '" + subdiscipline + "'";
-    ArrayList<ArrayList<String>> subDesc = Conn.getData(sqlSubDesc);
+//    ArrayList<ArrayList<String>> subDesc = Conn.getData(sqlSubDesc);
     //subdiscipline = subDesc.get(0).get(0);
    // out.print(subdiscipline);
 
     String hfcCode = "SELECT Detail_Reference_code "
             + "FROM adm_lookup_detail "
             + "WHERE Master_Reference_code = '0081' AND Description = '" + hfc + "'";
-    ArrayList<ArrayList<String>> dataHFCCode = Conn.getData(hfcCode);
+//    ArrayList<ArrayList<String>> dataHFCCode = Conn.getData(hfcCode);
 
 //out.print(hfc);
-    if (dataHFCCode.size() > 0) {
-        hfcCD = dataHFCCode.get(0).get(0);
-    } else {
-        hfcCD = null;
-    }
+//    if (dataHFCCode.size() > 0) {
+//        hfcCD = dataHFCCode.get(0).get(0);
+//    } else {
+//        hfcCD = null;
+//    }
 
     String sqlhfc = "SELECT DISTINCT state_code "
             + "FROM pms_duty_roster "
@@ -73,28 +77,22 @@ Conn Conn = new Conn();
 
     String codeState = dataSQLHFC.get(0).get(0);
 
-    String sql = "SELECT lm.Master_Reference_code, ld.`Master_Ref_code`, ld.Detail_Reference_code, pmsh.*, ld.Description "
+    String sql = "SELECT lm.Master_Reference_code, ld.`Master_Reference_code`, ld.Detail_Reference_code, pmsh.*, ld.Description "
             + "FROM adm_lookup_master lm, adm_lookup_detail ld, pms_holiday pmsh "
-            + "WHERE lm.`Master_Reference_code` = ld.`Master_Reference_code` AND ld.`Master_Reference_code` = '0002' "
-            + "AND ld.`Detail_Reference_code` = pmsh.state_code "
+            + "WHERE lm.`Master_Reference_code` = ld.`Master_Reference_code` AND ld.`Master_Reference_code` = '0002' AND ld.`Detail_Reference_code` = pmsh.state_code AND ld.hfc_cd = '"+hfc+"' "
             + "ORDER BY pmsh.holiday_date ASC, ld.`Description` ASC";
     ArrayList<ArrayList<String>> data = Conn.getData(sql);
 
-    String sqlDisplayClinic = "SELECT d.*, sub.description AS subdiscipline_name "
-            + "FROM adm_lookup_detail sub, "
-            + "(SELECT c.*, al.description AS discipline_name "
-            + "FROM adm_lookup_detail al, "
-            + "(SELECT b.*,hfc.description AS hfc_name "
-            + "FROM adm_lookup_detail hfc,"
-            + "(SELECT t.*,ld.description AS state_name "
-            + "FROM adm_lookup_detail ld, "
-            + "(SELECT state_code, hfc_cd, day_cd, discipline_cd, subdiscipline_cd, start_time, end_time,  status "
-            + "FROM pms_clinic_day)t "
-            + "WHERE t.state_code=ld.`Detail_Reference_code` AND ld.`Master_Reference_code` = '0002'  AND hfc_cd= '" + hfc + "')b "
-            + "WHERE hfc.Master_Reference_code='0081' AND hfc.Detail_Reference_code = b.hfc_cd)c "
-            + "WHERE al.`Master_Reference_code`='0072' AND al.`Detail_Reference_code` = c.discipline_cd)d "
-            + "WHERE sub.`Master_Reference_code` = '0071' AND sub.`Detail_Reference_code` = d.subdiscipline_cd "
-            + "ORDER BY state_name ASC";
+    String sqlDisplayClinic ="SELECT d.*, sub.description AS subdiscipline_name FROM adm_lookup_detail sub,"
+            + " (SELECT c.*, al.description AS discipline_name FROM adm_lookup_detail al, "
+            + "(SELECT b.*,hfc.description AS hfc_name FROM adm_lookup_detail hfc,"
+            + " (SELECT t.*,ld.description AS state_name FROM adm_lookup_detail ld,  "
+            + "(SELECT state_code, hfc_cd, day_cd, discipline_cd, subdiscipline_cd, start_time, end_time, status FROM pms_clinic_day WHERE hfc_cd = '"+hfc+"' )t "
+            + " WHERE t.state_code=ld.`Detail_Reference_code` AND ld.`Master_Reference_code` = '0002' AND ld.hfc_cd = '"+hfc+"')b  "
+            + "WHERE hfc.Master_Reference_code='0081' AND hfc.Detail_Reference_code = b.hfc_cd AND hfc.hfc_cd = '"+hfc+"')c"
+            + "  WHERE al.`Master_Reference_code`='0072' AND al.`Detail_Reference_code` = c.discipline_cd AND al.hfc_cd = '"+hfc+"')d  "
+            + "WHERE sub.`Master_Reference_code` = '0071' AND sub.`Detail_Reference_code` = d.subdiscipline_cd  AND sub.hfc_cd = '"+hfc+"'"
+            + " ORDER BY state_name ASC";
     ArrayList<ArrayList<String>> dataClinicDay = Conn.getData(sqlDisplayClinic);
 
     String sqlDisplayRoster = "SELECT LCASE(ad.USER_NAME) as patientName, ad.USER_ID, dr.hfc_cd, DATE(dr.start_date) AS start_date, DATE(dr.end_date) AS end_date, TIME(dr.start_time) AS start_time, TIME(dr.end_time) AS end_time, dr.roster_category, dr.status "
@@ -119,23 +117,17 @@ Conn Conn = new Conn();
 
     
     
-    String sqlAppointment = "SELECT lookSub.appointment_date, lookSub.start_time, lookSub.pmi_no, lookSub.patient_name, "
-            + "lookSub.staff_name ,lookSub.discipline_name, lds.Description AS subdipline_name, lookSub.appointment_type, lookSub.ID_NO, lookSub.status, lookSub.canceled_reason "
-            + "FROM adm_lookup_detail lds, "
-            + "(SELECT lookDis.appointment_date, lookDis.start_time, lookDis.pmi_no, lookDis.PATIENT_NAME AS patient_name, "
-            + "lookDis.USER_NAME AS staff_name ,ld.Description AS discipline_name, lookDis.subdiscipline, lookDis.appointment_type, lookDis.ID_NO, lookDis.status, lookDis.canceled_reason "
-            + "FROM adm_lookup_detail ld, "
-            + "(SELECT DATE(pa.appointment_date) AS appointment_date, TIME(pa.start_time) AS start_time, pa.pmi_no, LCASE(pb.PATIENT_NAME) AS PATIENT_NAME, "
-            + "LCASE(au.USER_NAME) AS USER_NAME, pa.discipline, pa.subdiscipline, pa.appointment_type, pb.ID_NO, pa.status, pa.canceled_reason "
-            + "FROM pms_appointment pa, pms_patient_biodata pb, adm_users au "
-            + "WHERE pa.pmi_no = pb.PMI_NO AND pa.userid = au.USER_ID AND pa.userid = '" + username + "' "
-            + "ORDER BY pa.appointment_date DESC, start_time ASC) lookDis "
-            + "WHERE lookDis.discipline=ld.Detail_Reference_code "
-            + "AND ld.Master_Reference_code = '0072') lookSub "
-            + "WHERE lds.Master_Reference_code = '0071' "
-            + "AND lookSub.subdiscipline=lds.Detail_Reference_code";
+    String sqlAppointment = "SELECT lookSub.appointment_date, lookSub.start_time, lookSub.pmi_no, lookSub.patient_name, lookSub.staff_name ,lookSub.discipline_name, lds.Description  "
+             + "AS subdipline_name, lookSub.appointment_type, lookSub.ID_NO, lookSub.status, lookSub.canceled_reason FROM adm_lookup_detail lds,  "
+             + "( SELECT lookDis.appointment_date, lookDis.start_time, lookDis.pmi_no, lookDis.PATIENT_NAME AS patient_name, lookDis.USER_NAME AS staff_name ,ld.Description AS discipline_name, "
+             + "lookDis.subdiscipline, lookDis.appointment_type, lookDis.ID_NO, lookDis.status, lookDis.canceled_reason FROM adm_lookup_detail ld, "
+             + "( SELECT DATE(pa.appointment_date) AS appointment_date, TIME(pa.start_time) AS start_time, pa.pmi_no, LCASE(pb.PATIENT_NAME)  AS PATIENT_NAME, "
+             + "LCASE(au.USER_NAME) AS USER_NAME, pa.discipline, pa.subdiscipline, pa.appointment_type, pb.ID_NO, pa.status, pa.canceled_reason  FROM pms_appointment pa, pms_patient_biodata pb, adm_users au"
+             + " WHERE pa.pmi_no = pb.PMI_NO AND pa.userid = au.USER_ID AND pa.hfc_cd = '"+hfc+"'  AND (lower(au.USER_ID) like '%"+username+"%' OR upper(au.USER_ID ) like '%"+username+"%')"
+             + " ORDER BY pa.appointment_date DESC, pa.start_time ASC ) lookDis WHERE lookDis.discipline=ld.Detail_Reference_code  AND ld.Master_Reference_code = '0072' AND ld.hfc_cd = '"+hfc+"') lookSub "
+             + "WHERE lds.Master_Reference_code = '0071' AND lookSub.subdiscipline=lds.Detail_Reference_code AND lds.hfc_cd= '"+hfc+"'";
     ArrayList<ArrayList<String>> dataAppointment = Conn.getData(sqlAppointment);
-
+//out.print(sqlAppointment);
     String e1 = null;
     String e2 = null;
     String e3 = null;
@@ -545,7 +537,7 @@ Conn Conn = new Conn();
                                     <input type="hidden" name="startLeaveBefore" value="" id="startLeaveBefore">
                                     <div class="col-sm-10">
 
-                                        <input  class="form-control" name="start_leave" value="" type="date" id="startDateLeave" required>
+                                        <input  class="form-control" name="start_leave" value="" type="text" id="startDateLeave" required>
 
                                     </div>
                                 </div>
@@ -553,7 +545,7 @@ Conn Conn = new Conn();
                                     <label class="control-label col-sm-2" for="endLeave">End Leave </label>
                                     <div class="col-sm-10">
 
-                                        <input  class="form-control" name="end_leave" value="" type="date" id="endDateLeave" required>
+                                        <input  class="form-control" name="end_leave" value="" type="text" id="endDateLeave" required>
 
                                     </div>
                                 </div>
@@ -675,7 +667,7 @@ Conn Conn = new Conn();
                                         </div>
                                         <!--</div>-->
                                     </form>
-                                                <% out.print(sqlDctorAvailability);%>
+                                               
                                     <button class="btn btn-info" id="todaySearch">Today's Availability</button>
 
                                 </div>
@@ -868,7 +860,7 @@ Conn Conn = new Conn();
                                             <label class="control-label col-sm-2" for="appDate">*Appointment Date : </label>  
                                             <div class="col-sm-10">   
                                                 <%if (appDate == null) {%>
-                                                <input  name="appDate" type="date" id="datepicker" class="form-control" required>
+                                                <input  name="appDate" type="text" id="datepicker" class="form-control" required>
                                                 <%} else {%>
                                                 <input name="appDate" value="<%= appDate%>" type="date"  class="form-control" required>
                                                 <%}%>
@@ -962,7 +954,7 @@ Conn Conn = new Conn();
                                                     <option></option>
                                                     <%
                                                         String sqlAppType = "SELECT * FROM adm_lookup_detail "
-                                                                + "WHERE Master_Reference_code = '0086' ";
+                                                                + "WHERE Master_Reference_code = '0086' AND hfc_cd = '"+hfc+"' ";
                                                         ArrayList<ArrayList<String>> dataAppType = Conn.getData(sqlAppType);
 
                                                         if (e48 == null) {
@@ -1029,7 +1021,7 @@ Conn Conn = new Conn();
                                         <div class="form-inline" >
                                             <div class="form-group">
                                                 <!--<label>PMI No :</label>-->
-                                                <input type="date" name="searchAppointmentDate"  id="searchAppointmentDate" class="form-control" placeholder="Search Appointment Date"/>
+                                                <input type="input" name="searchAppointmentDate"  id="searchAppointmentDate" class="form-control" placeholder="Search Appointment Date"/>
                                             </div>
                                             <div class="form-group">
                                                 <button class="btn btn-xs btn-success" id="searchDateView">Search</button>

@@ -4,6 +4,8 @@
  * and open the template in the editor.
  */
 $(document).ready(function(){
+     $('#startDateLeave').datepicker({dateFormat:'dd/mm/yy'});
+       $('#endDateLeave').datepicker({dateFormat:'dd/mm/yy'});
         $('#applyLeave').click(function(e){
             e.preventDefault(e);
             

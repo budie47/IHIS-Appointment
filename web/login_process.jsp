@@ -31,7 +31,7 @@
     { 
         for(int index=0; index<dataPatient.size(); index++)
         {
-            if(dataPatient.get(index).get(3).equals(password))
+            if(dataPatient.get(index).get(2).equals(password))
             {
                 session.setAttribute("username", username);
                 String ic = dataPatient.get(index).get(0) ;

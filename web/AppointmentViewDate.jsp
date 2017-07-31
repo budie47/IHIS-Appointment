@@ -78,7 +78,7 @@
             + "ORDER BY status DESC";
     ArrayList<ArrayList<String>> dataAdminLeave = Conn.getData(sqlAdminLeave);
 
-    String sqlAdminUsername = "SELECT USER_NAME FROM adm_user WHERE USER_ID = '" + username + "'";
+    String sqlAdminUsername = "SELECT USER_NAME FROM adm_users WHERE USER_ID = '" + username + "'";
     ArrayList<ArrayList<String>> dataAdminUsername = Conn.getData(sqlAdminUsername);
 
     String adminUsername = dataAdminUsername.get(0).get(0);
@@ -150,7 +150,8 @@
                                         <%
 
                                             String searchAppointmentDate = request.getParameter("searchAppointmentDate");
-                                            //String searchAppointmentDate = "2017-01-31";
+                                            //String searchAppointmentDate ="2017-05-09";
+                                           // String searchAppointmentDate = "2017-01-31";
                                             DateTime dt = DateTime.parse(searchAppointmentDate);
                                             String enteredDate = (String) dt.toString("dd/MM/yyyy");
 
@@ -163,24 +164,19 @@
                                             SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy");
                                             String appointmentDateFromOtherForm = DATE_FORMAT.format(covertedAppDateFromOtherForm);
 
-                                            String sqlAppointmentDate = "SELECT lookSub.appointment_date, lookSub.start_time, lookSub.pmi_no, lookSub.patient_name, "
-                                                    + "lookSub.staff_name ,lookSub.discipline_name, lds.Description AS subdipline_name, lookSub.appointment_type, lookSub.ID_NO, lookSub.status , lookSub.canceled_reason "
-                                                    + "FROM lookup_detail lds, "
-                                                    + "(SELECT lookDis.appointment_date, lookDis.start_time, lookDis.pmi_no, lookDis.PATIENT_NAME AS patient_name, "
-                                                    + "lookDis.USER_NAME AS staff_name ,ld.Description AS discipline_name, lookDis.subdiscipline, lookDis.appointment_type, lookDis.ID_NO, lookDis.status, lookDis.canceled_reason "
-                                                    + "FROM lookup_detail ld, "
-                                                    + "(SELECT DATE(pa.appointment_date) AS appointment_date, TIME(pa.start_time) AS start_time, pa.pmi_no, LCASE(pb.PATIENT_NAME) AS PATIENT_NAME, "
-                                                    + "LCASE(au.USER_NAME) AS USER_NAME, pa.discipline, pa.subdiscipline, pa.appointment_type, pb.ID_NO, pa.status, pa.canceled_reason "
-                                                    + "FROM pms_appointment pa, pms_patient_biodata pb, adm_user au "
-                                                    + "WHERE pa.pmi_no = pb.PMI_NO AND pa.userid = au.USER_ID AND DATE(pa.appointment_date) = '" + searchAppointmentDate + "' "
-                                                    + "ORDER BY DATE(pa.appointment_date) ASC) lookDis "
-                                                    + "WHERE lookDis.discipline=ld.Detail_Ref_code "
-                                                    + "AND ld.Master_Ref_code = '0072') lookSub "
-                                                    + "WHERE lds.Master_Ref_code = '0071' "
-                                                    + "AND lookSub.subdiscipline=lds.Detail_Ref_code";
+                                            String sqlAppointmentDate = "SELECT lookSub.appointment_date, lookSub.start_time, lookSub.pmi_no, lookSub.patient_name, lookSub.staff_name ,lookSub.discipline_name, lds.Description AS"
+                                                    + " subdipline_name, lookSub.appointment_type, lookSub.ID_NO, lookSub.status, lookSub.canceled_reason  FROM adm_lookup_detail lds, "
+                                                    + " (    SELECT lookDis.appointment_date, lookDis.start_time, lookDis.pmi_no, lookDis.PATIENT_NAME AS patient_name, lookDis.USER_NAME AS staff_name ,"
+                                                    + "ld.Description AS discipline_name, lookDis.subdiscipline,    lookDis.appointment_type, lookDis.ID_NO, lookDis.status, lookDis.canceled_reason   FROM adm_lookup_detail ld,   "
+                                                    + " (    SELECT DATE(pa.appointment_date) AS appointment_date, TIME(pa.start_time) AS start_time, pa.pmi_no, LCASE(pb.PATIENT_NAME) AS PATIENT_NAME,"
+                                                    + " LCASE(au.USER_NAME) AS USER_NAME, pa.discipline,    pa.subdiscipline, pa.appointment_type, pb.ID_NO, pa.status, pa.canceled_reason   "
+                                                    + "  FROM pms_appointment pa, pms_patient_biodata pb, adm_users au             WHERE pa.pmi_no = pb.PMI_NO AND pa.userid = au.USER_ID AND pa.hfc_cd = '04010101'  AND "
+                                                    + " DATE(pa.appointment_date) = '"+searchAppointmentDate+"' ORDER BY pa.appointment_date DESC, pa.start_time ASC     ) lookDis    "
+                                                    + "WHERE lookDis.discipline=ld.Detail_Reference_code AND ld.Master_Reference_code = '0072' AND ld.hfc_cd = '"+hfc+"') lookSub"
+                                                    + " WHERE lds.Master_Reference_code = '0071' AND lookSub.subdiscipline=lds.Detail_Reference_code AND lds.hfc_cd= '"+hfc+"'";
                                             ArrayList<ArrayList<String>> dataAppointmentDate = Conn.getData(sqlAppointmentDate);
 
-                //                                out.print(sqlAppointmentDate);
+                                               //out.print(sqlAppointmentDate);
                                             for (int i = 0; i < dataAppointmentDate.size(); i++) {
                                         %>
                                         <tr>

@@ -43,7 +43,7 @@
             + "FROM lookup_master lm, lookup_detail ld, pms_holiday pmsh "
             + "WHERE lm.`Master_Ref_code` = ld.`Master_Ref_code` AND ld.`Master_Ref_code` = '0002' AND ld.`Detail_Ref_code` = pmsh.state_code "
             + "ORDER BY pmsh.holiday_date ASC, ld.`Description` ASC";
-    ArrayList<ArrayList<String>> data = Conn.getData(sqlDisplayHoliday);
+    //ArrayList<ArrayList<String>> data = Conn.getData(sqlDisplayHoliday);
 
     String sqlDisplayClinic = "SELECT d.*, sub.description AS subdiscipline_name "
             + "FROM lookup_detail sub, "
@@ -60,28 +60,28 @@
             + "WHERE al.`Master_Ref_code`='0072' AND al.`Detail_Ref_code` = c.discipline_cd)d "
             + "WHERE sub.`Master_Ref_code` = '0071' AND sub.`Detail_Ref_code` = d.subdiscipline_cd "
             + "ORDER BY state_name ASC";
-    ArrayList<ArrayList<String>> dataClinicDay = Conn.getData(sqlDisplayClinic);
+    //ArrayList<ArrayList<String>> dataClinicDay = Conn.getData(sqlDisplayClinic);
 
     String sqlDisplayRoster = "SELECT LCASE(ad.USER_NAME) as patientName, ad.USER_ID, dr.hfc_cd, DATE(dr.start_date) AS start_date, DATE(dr.end_date) AS end_date, TIME(dr.start_time) AS start_time, TIME(dr.end_time) AS end_time, dr.roster_category, dr.status "
             + "FROM adm_user ad, pms_duty_roster dr "
             + "WHERE ad.USER_ID = dr.user_id";
-    ArrayList<ArrayList<String>> dataClinicRoster = Conn.getData(sqlDisplayRoster);
+    //ArrayList<ArrayList<String>> dataClinicRoster = Conn.getData(sqlDisplayRoster);
 
     String sqlStaffLeave = "SELECT sl.hfc_cd, au.USER_ID, LCASE(au.USER_NAME) AS patientName, date(sl.start_leave_date), date(sl.end_leave_date), sl.leave_reason, sl.status "
             + "FROM pms_staff_leave sl, adm_user au "
             + "WHERE (sl.status = 'process' OR sl.status = 'approve' OR status = 'not approve') AND au.USER_ID = sl.user_id "
             + "ORDER BY au.USER_NAME DESC";
-    ArrayList<ArrayList<String>> dataStaffLeave = Conn.getData(sqlStaffLeave);
+    //ArrayList<ArrayList<String>> dataStaffLeave = Conn.getData(sqlStaffLeave);
 
     String sqlAdminLeave = "SELECT user_id, date(start_leave_date), date(end_leave_date), leave_reason, status "
             + "FROM pms_staff_leave WHERE user_id = '" + username + "' AND (status = 'process' OR status = 'approve' OR status = 'not approve') "
             + "ORDER BY status DESC";
-    ArrayList<ArrayList<String>> dataAdminLeave = Conn.getData(sqlAdminLeave);
+    //ArrayList<ArrayList<String>> dataAdminLeave = Conn.getData(sqlAdminLeave);
 
     String sqlAdminUsername = "SELECT USER_NAME FROM adm_user WHERE USER_ID = '" + username + "'";
-    ArrayList<ArrayList<String>> dataAdminUsername = Conn.getData(sqlAdminUsername);
+  //  ArrayList<ArrayList<String>> dataAdminUsername = Conn.getData(sqlAdminUsername);
 
-    String adminUsername = dataAdminUsername.get(0).get(0);
+   // String adminUsername = dataAdminUsername.get(0).get(0);
 
     String sqlDoctorAvailable = "SELECT doc.*,DATE(pdr.start_date),DATE(pdr.end_date) "
             + "from pms_duty_roster pdr, "
@@ -91,27 +91,19 @@
             + "ORDER BY LCASE(USER_NAME) ASC)doc "
             + "where doc.USER_ID=pdr.user_id AND pdr.status='active' AND "
             + "DATE(now()) BETWEEN DATE(start_date) AND DATE(end_date) ";
-    ArrayList<ArrayList<String>> dataDoctorAvailable = Conn.getData(sqlDoctorAvailable);
+  //  ArrayList<ArrayList<String>> dataDoctorAvailable = Conn.getData(sqlDoctorAvailable);
     String searchAppointmentPatient = request.getParameter("searchAppointmentPatient");
+//String searchAppointmentPatient = "budie";
 
-
-    String sqlAppointment = "SELECT lookSub.appointment_date, lookSub.start_time, lookSub.pmi_no, lookSub.patient_name, "
-            + "lookSub.staff_name ,lookSub.discipline_name, lds.Description AS subdipline_name, lookSub.appointment_type, lookSub.status, lookSub.canceled_reason "
-            + "FROM lookup_detail lds, "
-            + "(SELECT lookDis.appointment_date, lookDis.start_time, lookDis.pmi_no, lookDis.PATIENT_NAME AS patient_name, "
-            + "lookDis.USER_NAME AS staff_name ,ld.Description AS discipline_name, lookDis.subdiscipline, lookDis.appointment_type, lookDis.status, lookDis.canceled_reason "
-            + "FROM lookup_detail ld, "
-            + "(SELECT DATE(pa.appointment_date) AS appointment_date, TIME(pa.start_time) AS start_time, pa.pmi_no, LCASE(pb.PATIENT_NAME) AS PATIENT_NAME, "
-            + "LCASE(au.USER_NAME) AS USER_NAME, "
-            + "pa.discipline, pa.subdiscipline, pa.appointment_type, pa.status, pa.canceled_reason "
-            + "FROM pms_appointment pa, pms_patient_biodata pb, adm_user au "
-            + "WHERE pa.pmi_no = pb.PMI_NO AND pa.userid = au.USER_ID "
-            + "AND  (lower(pb.PATIENT_NAME) like '%"+searchAppointmentPatient+"%' OR upper(pb.PATIENT_NAME) like '%"+searchAppointmentPatient+"%') "
-            + "ORDER BY pa.appointment_date DESC, pa.start_time ASC) lookDis "
-            + "WHERE lookDis.discipline=ld.Detail_Ref_code "
-            + "AND ld.Master_Ref_code = '0072') lookSub "
-            + "WHERE lds.Master_Ref_code = '0071' "
-            + "AND lookSub.subdiscipline=lds.Detail_Ref_code";
+    String sqlAppointment = "SELECT lookSub.appointment_date, lookSub.start_time, lookSub.pmi_no, lookSub.patient_name, lookSub.staff_name ,lookSub.discipline_name, lds.Description "
+            + "AS subdipline_name, lookSub.appointment_type, lookSub.ID_NO, lookSub.status, lookSub.canceled_reason FROM adm_lookup_detail lds,"
+            + " ( SELECT lookDis.appointment_date, lookDis.start_time, lookDis.pmi_no, lookDis.PATIENT_NAME AS patient_name, lookDis.USER_NAME AS staff_name ,ld.Description AS discipline_name, "
+            + "lookDis.subdiscipline, lookDis.appointment_type, lookDis.ID_NO, lookDis.status, lookDis.canceled_reason FROM adm_lookup_detail ld, "
+            + "( SELECT DATE(pa.appointment_date) AS appointment_date, TIME(pa.start_time) AS start_time, pa.pmi_no, LCASE(pb.PATIENT_NAME) AS PATIENT_NAME, LCASE(au.USER_NAME) AS USER_NAME, "
+            + "pa.discipline, pa.subdiscipline, pa.appointment_type, pb.ID_NO, pa.status, pa.canceled_reason FROM pms_appointment pa, pms_patient_biodata pb, adm_users au "
+            + "WHERE pa.pmi_no = pb.PMI_NO AND pa.userid = au.USER_ID AND pa.hfc_cd = '04010101' AND   (lower(pb.PATIENT_NAME) like '%"+searchAppointmentPatient+"%' OR upper(pb.PATIENT_NAME) like '%"+searchAppointmentPatient+"%') "
+            + "ORDER BY pa.appointment_date DESC, pa.start_time ASC ) lookDis WHERE lookDis.discipline=ld.Detail_Reference_code AND ld.Master_Reference_code = '0072' AND ld.hfc_cd = '04010101') lookSub "
+            + "WHERE lds.Master_Reference_code = '0071' AND lookSub.subdiscipline=lds.Detail_Reference_code AND lds.hfc_cd= '04010101'";
     ArrayList<ArrayList<String>> dataAppointment = Conn.getData(sqlAppointment); 
     
 
@@ -174,7 +166,7 @@
                                         Date currentDate=new Date();
                                         String todayDate=DATE_FORMAT.format(currentDate);
 
-                                        if((covertedAppDate.after(currentDate) || appointmentDate.contentEquals(todayDate)) && dataAppointment.get(i).get(8).equals("active"))
+                                        if((covertedAppDate.after(currentDate) || appointmentDate.contentEquals(todayDate)) && dataAppointment.get(i).get(9).equals("active"))
                                         { %>
                                             <td class="incoming_date_area"><center><%out.print(i+1);%></center></td>
                                             <td class="incoming_date_area"><center><%=appointmentDate%></center></td>
@@ -215,7 +207,7 @@
                                         <td class="incoming_date_area"><center></center></td>
                                         <% 
                                                                                 } 
-                                        else if((covertedAppDate.after(currentDate) || appointmentDate.contentEquals(todayDate)) && dataAppointment.get(i).get(8).equals("canceled"))
+                                        else if((covertedAppDate.after(currentDate) || appointmentDate.contentEquals(todayDate)) && dataAppointment.get(i).get(9).equals("canceled"))
                                         {%>
                                             <td style="background-color : yellow"><center><%out.print(i+1);%></center></td>
                                             <td><center><%=appointmentDate%></center></td>

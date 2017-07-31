@@ -26,7 +26,7 @@
                 String datetimeAppoinment = dateAppointment + " " + timeAppointment;
                 String typeAppointment = request.getParameter("typeAppointment");
                 //String hfcCode = request.getParameter("HfcCode");
-                
+                String realHFCCd = (String)session.getAttribute("HEALTH_FACILITY_CODE");
                 
                 String hfcCode;
                 //String hfc = (String)session.getAttribute("sessionHFC");
@@ -140,7 +140,7 @@
                 //INSERT CODE
                 RMIConnector rmic = new RMIConnector();
                 String sqlInsert = "INSERT INTO pms_appointment (pmi_no, hfc_cd, appointment_date, module_cd, hfc_to, txn_date, location_cd, userid, encounter_date, episode_date, order_no, appointment_type, register_status, status, remarks, start_time, end_time, discipline, subdiscipline, created_by, created_date) "
-                                    + "VALUES ('"+pmiNo+"' , '"+hfcCode+"','"+datetimeAppoinment+"','-','-','0000-00-00','-','"+doctor+"','0000-00-00','0000-00-00','-','"+typeAppointment+"','-','active','pending','"+datetimeAppoinment+"','0000-00-00','"+discipline+"','"+subdiscipline+"','"+ic+"',now())";
+                                    + "VALUES ('"+pmiNo+"' , '"+realHFCCd+"','"+datetimeAppoinment+"','-','-','0000-00-00','-','"+doctor+"','0000-00-00','0000-00-00','-','"+typeAppointment+"','-','active','pending','"+datetimeAppoinment+"','0000-00-00','"+discipline+"','"+subdiscipline+"','"+ic+"',now())";
 
                 rmic.setQuerySQL(Conn.HOST, Conn.PORT, sqlInsert);
                 out.print("appointmentInsert");

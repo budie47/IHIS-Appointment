@@ -21,25 +21,25 @@
         String leaveReason = request.getParameter("desc");
         String hfc = (String)session.getAttribute("HEALTH_FACILITY_CODE");
 
-        String sqlAdminName = "SELECT USER_ID from adm_user WHERE USER_NAME = '"+staffName+"' ";
+        String sqlAdminName = "SELECT USER_ID from adm_users WHERE USER_NAME = '"+staffName+"' ";
         ArrayList<ArrayList<String>> dataAdminID = Conn.getData(sqlAdminName);
         
         //out.print(sqlAdminName);
         String staffID = dataAdminID.get(0).get(0);
 
         
-        String sqlGetHFCCode = "SELECT Detail_Ref_code from lookup_detail WHERE Master_Ref_code = '0081' AND Description = '"+hfc+"' ";
-        ArrayList<ArrayList<String>> dataGetHFCCode = Conn.getData(sqlGetHFCCode);
-        String dataHFCCode = dataGetHFCCode.get(0).get(0);
+//        String sqlGetHFCCode = "SELECT Detail_Ref_code from lookup_detail WHERE Master_Ref_code = '0081' AND Description = '"+hfc+"' ";
+//        ArrayList<ArrayList<String>> dataGetHFCCode = Conn.getData(sqlGetHFCCode);
+//        String dataHFCCode = dataGetHFCCode.get(0).get(0);
         //out.print(sqlGetHFCCode);
         
-        String sqlgetHoliday2 = "SELECT day_cd, discipline_cd, subdiscipline_cd, hfc_cd FROM pms_clinic_day WHERE hfc_cd = '"+dataHFCCode+"' ";
+        String sqlgetHoliday2 = "SELECT day_cd, discipline_cd, subdiscipline_cd, hfc_cd FROM pms_clinic_day WHERE hfc_cd = '"+hfc+"' ";
         ArrayList<ArrayList<String>> dataGetStates = Conn.getData(sqlgetHoliday2);
         String dataDiscipline = dataGetStates.get(0).get(1);
         String dataSubdiscipline = dataGetStates.get(0).get(2);
         //out.print(sqlgetHoliday2);
         
-        String sqlStaffID = "SELECT USER_ID, USER_NAME FROM adm_user WHERE USER_ID = '"+staffID+"' ";
+        String sqlStaffID = "SELECT USER_ID, USER_NAME FROM adm_users WHERE USER_ID = '"+staffID+"' ";
         ArrayList<ArrayList<String>> dataGetStaffID = Conn.getData(sqlStaffID);
         String dataStaffID = dataGetStaffID.get(0).get(0);
         //out.print(sqlStaffID);
@@ -82,7 +82,7 @@
         {
             RMIConnector rmic = new RMIConnector();
             String sqlInsert = "INSERT INTO pms_staff_leave (user_id, hfc_cd, start_leave_date, discipline_cd, subdiscipline_cd, end_leave_date, leave_type, leave_reason, status, applied_by, applied_date, approved_by, approved_date) "
-                        + "VALUES ('"+dataStaffID+"','"+dataHFCCode+"','"+startLeave+"','"+dataDiscipline+"','"+dataSubdiscipline+"','"+endLeave+"','-','"+leaveReason+"','process','"+dataStaffID+"',now(),'-','0000-00-00')";
+                        + "VALUES ('"+dataStaffID+"','"+hfc+"','"+startLeave+"','"+dataDiscipline+"','"+dataSubdiscipline+"','"+endLeave+"','-','"+leaveReason+"','process','"+dataStaffID+"',now(),'-','0000-00-00')";
 
             boolean isInsert = rmic.setQuerySQL(Conn.HOST, Conn.PORT, sqlInsert);
 

@@ -56,45 +56,39 @@
     }
 //    out.print(username);
 //    out.print(name);
-    String hfcCode = "SELECT Detail_Ref_code "
-            + "FROM lookup_detail "
-            + "WHERE Master_Ref_code = '0081' AND Description = '"+hfc+"'";
+    String hfcCode = "SELECT `Description` FROM adm_lookup_detail WHERE `Master_Reference_code` = '0081' AND `Detail_Reference_code` = '"+hfc+"' AND hfc_cd = '"+hfc+"' ";
     ArrayList<ArrayList<String>> dataHFC = Conn.getData(hfcCode);  
-
-    String hfcCD;
+//out.print(hfcCode);
+    String hfcName;
     if(dataHFC.size() > 0)
     {
-        hfcCD = dataHFC.get(0).get(0);
+        hfcName = dataHFC.get(0).get(0);
     }
     else
     {
-        hfcCD = null;
+        hfcName = null;
     }
     
     
     String sqlDisplayHoliday = "SELECT lm.Master_Reference_code, ld.`Master_Reference_code`, ld.Detail_Reference_code, pmsh.*, ld.Description "
             + "FROM adm_lookup_master lm, adm_lookup_detail ld, pms_holiday pmsh "
-            + "WHERE lm.`Master_Reference_code` = ld.`Master_Reference_code` AND ld.`Master_Reference_code` = '0002' AND ld.`Detail_Reference_code` = pmsh.state_code "
+            + "WHERE lm.`Master_Reference_code` = ld.`Master_Reference_code` AND ld.`Master_Reference_code` = '0002' AND ld.`Detail_Reference_code` = pmsh.state_code AND ld.hfc_cd = '"+hfc+"' "
             + "ORDER BY pmsh.holiday_date ASC, ld.`Description` ASC";
     ArrayList<ArrayList<String>> data = Conn.getData(sqlDisplayHoliday);
+    //out.print(sqlDisplayHoliday);
     
-    String sqlDisplayClinic =  "SELECT d.*, sub.description AS subdiscipline_name "
-            + "FROM adm_lookup_detail sub, "
-            + "(SELECT c.*, al.description AS discipline_name "
-            + "FROM adm_lookup_detail al, "
-            + "(SELECT b.*,hfc.description AS hfc_name "
-            + "FROM adm_lookup_detail hfc,"
-            + "(SELECT t.*,ld.description AS state_name "
-            + "FROM adm_lookup_detail ld, "
-            + "(SELECT state_code, hfc_cd, day_cd, discipline_cd, subdiscipline_cd, start_time, end_time,  status "
-            + "FROM pms_clinic_day)t "
-            + "WHERE t.state_code=ld.`Detail_Reference_code` AND ld.`Master_Reference_code` = '0002'  AND hfc_cd= '"+hfc+"')b "
-            + "WHERE hfc.Master_Reference_code='0081' AND hfc.Detail_Reference_code = b.hfc_cd)c "
-            + "WHERE al.`Master_Reference_code`='0072' AND al.`Detail_Reference_code` = c.discipline_cd)d "
-            + "WHERE sub.`Master_Reference_code` = '0071' AND sub.`Detail_Reference_code` = d.subdiscipline_cd "
-            + "ORDER BY state_name ASC";
+    String sqlDisplayClinic = "SELECT d.*, sub.description AS subdiscipline_name FROM adm_lookup_detail sub,"
+            + " (SELECT c.*, al.description AS discipline_name FROM adm_lookup_detail al, "
+            + "(SELECT b.*,hfc.description AS hfc_name FROM adm_lookup_detail hfc,"
+            + " (SELECT t.*,ld.description AS state_name FROM adm_lookup_detail ld,  "
+            + "(SELECT state_code, hfc_cd, day_cd, discipline_cd, subdiscipline_cd, start_time, end_time, status FROM pms_clinic_day WHERE hfc_cd = '"+hfc+"' )t "
+            + " WHERE t.state_code=ld.`Detail_Reference_code` AND ld.`Master_Reference_code` = '0002' AND ld.hfc_cd = '"+hfc+"')b  "
+            + "WHERE hfc.Master_Reference_code='0081' AND hfc.Detail_Reference_code = b.hfc_cd AND hfc.hfc_cd = '"+hfc+"')c"
+            + "  WHERE al.`Master_Reference_code`='0072' AND al.`Detail_Reference_code` = c.discipline_cd AND al.hfc_cd = '"+hfc+"')d  "
+            + "WHERE sub.`Master_Reference_code` = '0071' AND sub.`Detail_Reference_code` = d.subdiscipline_cd  AND sub.hfc_cd = '"+hfc+"'"
+            + " ORDER BY state_name ASC";
     ArrayList<ArrayList<String>> dataClinicDay = Conn.getData(sqlDisplayClinic);
-
+   // out.print(sqlDisplayClinic);
 
     
     String sqlDisplayRoster =  "SELECT LCASE(ad.USER_NAME) as patientName, ad.USER_ID, dr.hfc_cd, DATE(dr.start_date) AS start_date, DATE(dr.end_date) AS end_date, TIME(dr.start_time) AS start_time, TIME(dr.end_time) AS end_time, dr.roster_category, dr.status  FROM adm_users ad, pms_duty_roster dr WHERE ad.USER_ID = dr.user_id AND dr.hfc_cd ='"+hfc+"'";
@@ -137,6 +131,7 @@
             + "where doc.USER_ID=pdr.user_id AND pdr.status='active' AND "
             + "DATE(now()) BETWEEN DATE(start_date) AND DATE(end_date) AND hfc_cd = '"+hfc+"'";
     ArrayList<ArrayList<String>> dataDoctorAvailable = Conn.getData(sqlDoctorAvailable);
+    //out.print(sqlDoctorAvailable);
     
 
     String sqlAppointment = "SELECT lookSub.appointment_date, lookSub.start_time, lookSub.pmi_no, lookSub.patient_name, "
@@ -148,13 +143,14 @@
             + "(SELECT DATE(pa.appointment_date) AS appointment_date, TIME(pa.start_time) AS start_time, pa.pmi_no, LCASE(pb.PATIENT_NAME) AS PATIENT_NAME, "
             + "LCASE(au.USER_NAME) AS USER_NAME, pa.discipline, pa.subdiscipline, pa.appointment_type, pb.ID_NO, pa.status, pa.canceled_reason "
             + "FROM pms_appointment pa, pms_patient_biodata pb, adm_users au "
-            + "WHERE pa.pmi_no = pb.PMI_NO AND pa.userid = au.USER_ID "
+            + "WHERE pa.pmi_no = pb.PMI_NO AND pa.userid = au.USER_ID   AND pa.hfc_cd = '04010101' "
             + "ORDER BY pa.appointment_date DESC, pa.start_time ASC) lookDis "
-            + "WHERE lookDis.discipline=ld.Detail_Ref_code "
+            + "WHERE lookDis.discipline=ld.Detail_Reference_code AND ld.hfc_cd = '04010101'"
             + "AND ld.Master_Reference_code = '0072') lookSub "
             + "WHERE lds.Master_Reference_code = '0071' "
-            + "AND lookSub.subdiscipline=lds.Detail_Reference_code";
+            + "AND lookSub.subdiscipline=lds.Detail_Reference_code AND lds.hfc_cd= '04010101'";
     ArrayList<ArrayList<String>> dataAppointment = Conn.getData(sqlAppointment); 
+    //out.print(sqlAppointment);
     
     String e1 = null; 
     String e2 = null;
@@ -436,9 +432,9 @@
                                         <input type="hidden" name="stateBefore" value="<%=e1%>">
                                         <select class="form-control" id="state" name="state_code" required>
                                             <option></option>
-                                            <%   String sql2 = "SELECT Detail_Reference_code, Description FROM adm_lookup_detail WHERE Master_Ref_code = '0002';";
+                                            <%   String sql2 = "SELECT Detail_Reference_code, Description FROM adm_lookup_detail WHERE Master_Reference_code = '0002' AND hfc_cd = '"+hfc+"' ";
                                                  ArrayList<ArrayList<String>> dataState = Conn.getData(sql2);
-                                
+                                                 
 
                                                      if(dataState.size()>0)
                                                      {
@@ -451,7 +447,7 @@
                                         </select>
                                     </div>
                                 </div>
-                                <div class="form-group">
+                                   <div class="form-group"><% //out.print(sql2); %>
                                     <label class="control-label col-sm-2" for="startdate">Date</label>  
                                     <input type="hidden" name="dateBefore" id="dateBefore">
                                     <input type="hidden" name="stateBefore" id="stateBefore">
@@ -745,7 +741,7 @@
                                         <select class="form-control" id="state_" name="state_code" onchange="showUser()" required>
                                             <option value="">Select State</option>
                                             <%   
-                                                 String sql3 = "SELECT Detail_Ref_code, Description FROM lookup_detail WHERE Master_Ref_code = '0002'";
+                                                 String sql3 = "SELECT Detail_Reference_code, Description FROM adm_lookup_detail WHERE Master_Reference_code = '0002'  AND  hfc_cd = '"+hfc+"'  ";
                                                  ArrayList<ArrayList<String>> dataStateClinic = Conn.getData(sql3);
                                 
                                                 if(e6 == null)
@@ -760,7 +756,7 @@
                                                 }
                                                 else
                                                 {    
-                                                    String sqlStateCode = "SELECT Detail_Referece_code FROM adm_lookup_detail WHERE Master_Reference_code = '0002' AND  Description ='"+e6+"'";
+                                                    String sqlStateCode = "SELECT Detail_Reference_code FROM adm_lookup_detail WHERE Master_Reference_code = '0002' AND  Description ='"+e6+"'   AND  hfc_cd = '"+hfc+"'  ";
                                                     ArrayList<ArrayList<String>> dataStateCode = Conn.getData(sqlStateCode);  
 
                                                     stateCode = dataStateCode.get(0).get(0);
@@ -798,8 +794,8 @@
                                             } else {
                                                 
 //                                                checkDropdown=true;
-                                                String getHFCValue = " SELECT * FROM lookup_detail "
-                                                        + "WHERE Master_Reference_code = '0081' AND Detail_Reference_code like '"+stateCode+"%'";
+                                                String getHFCValue = " SELECT * FROM adm_lookup_detail "
+                                                        + "WHERE Master_Reference_code = '0081' AND Detail_Reference_code like '"+stateCode+"%'  AND  hfc_cd = '"+hfc+"'  ";
                                                 ArrayList<ArrayList<String>> dataGetHFCValue = Conn.getData(getHFCValue);  
                                                 
                                                 if(dataGetHFCValue.size() > 0) {
@@ -826,7 +822,7 @@
                                     <div class="col-sm-10"> 
                                         <select class="form-control" id="discipline" name="discipline" required>
                                             <option></option>
-                                            <%  String sql5 = "SELECT Detail_Reference_code, Description FROM adm_lookup_detail WHERE Master_Reference_code = '0072';";
+                                            <%  String sql5 = "SELECT Detail_Reference_code, Description FROM adm_lookup_detail WHERE Master_Reference_code = '0072'  AND  hfc_cd = '"+hfc+"' ";
                                                 ArrayList<ArrayList<String>> dataDicClinic = Conn.getData(sql5);
                                                if (dataDicClinic.size() > 0) 
                                                     {
@@ -845,7 +841,7 @@
                                     <div class="col-sm-10">
                                         <select class="form-control" id="subdiscipline" name="subdiscipline" required>
                                             <option></option>
-                                            <%  String sql6 = "SELECT Detail_Reference_code, Description FROM adm_lookup_detail WHERE Master_Reference_code = '0071';";
+                                            <%  String sql6 = "SELECT Detail_Reference_code, Description FROM adm_lookup_detail WHERE Master_Reference_code = '0071'  AND  hfc_cd = '"+hfc+"' ";
                                                 ArrayList<ArrayList<String>> dataSubClinic = Conn.getData(sql6);
                                                  if (dataSubClinic.size() > 0) 
                                                     {
@@ -1046,7 +1042,8 @@
                                 <div class="form-group"> 
                                     <label class="control-label col-sm-2" for="staffID">Health Facility Name </label>
                                     <div class="col-sm-10"> 
-                                        <input  class="form-control" value="<%=hfc%>" type="text" id="hfcRoster" readonly>
+                                        <input  class="form-control" value="<%=hfc%>" type="hidden" id="hfcRoster" readonly>
+                                         <input  class="form-control" value="<%=hfcName%>" type="text" id="hfcNameRoster" readonly>
                                     </div>
                                 </div>
                                 <div class="form-group"> 
@@ -1876,7 +1873,7 @@
                                 + "FROM pms_appointment pa, pms_patient_biodata pb "
                                 + "WHERE pa.pmi_no = pb.PMI_NO AND pa.status = 'active' AND remarks = 'pending' AND (DATEDIFF(pa.appointment_date, NOW())>1 ))t "
                                 + "WHERE t.DiffDate<3)w "
-                                + "WHERE w.hfc_cd = ld.Detail_Ref_code AND ld.Master_Ref_code = '0081'  AND w.hfc_cd= '"+hfcCD+"'";
+                                + "WHERE w.hfc_cd = ld.Detail_Ref_code AND ld.Master_Ref_code = '0081'  AND w.hfc_cd= '"+hfc+"'";
                             ArrayList<ArrayList<String>> dataReminder = Conn.getData(sqlReminder);
 
                             if(dataReminder.size() > 0)
@@ -2018,7 +2015,7 @@
                                     <td class="incoming_date_area"><center><%=dataAppointment.get(i).get(7)%></center></td>
                                     <td class="incoming_date_area">
                                     <center>
-                                        <button class="btn btn-xs btn-primary" onClick="return myFunction('<%=dataAppointment.get(i).get(2)%>','<%=hfcCD%>','<%=dataAppointment.get(i).get(0)%>')">Cancel</button>
+                                        <button class="btn btn-xs btn-primary" onClick="return myFunction('<%=dataAppointment.get(i).get(2)%>','<%=hfc%>','<%=dataAppointment.get(i).get(0)%>')">Cancel</button>
 
                                     </center>
                                     </td>
@@ -2380,6 +2377,15 @@
                             else if(result.trim() === 'success'){
                                 alert('Insert Roster Successful');
                                 $('#rosterTable').load('adminAppointmentAjax.jsp #rosterTable');
+                                     $('#staffIDRoster').val('');
+                                    $('#userIDBefore').val('');
+                                    $('#roster_category').val('');
+                                    $('#startDateBeforeRoster').val('');
+                                    $('#startDateRoster').val('');
+                                    $('#endDateRoster').val('');
+                                    $('#startTimeRoster').val('');
+                                    $('#endTimeRoster').val('');
+                                    $('#statusRoster').val('');     
                             }
                             else {
                                 alert('error on ajax');
@@ -2553,6 +2559,18 @@
                            if(response === "success"){
                                alert('Clinic Day added');
                                $('#clinicDayTable').load('adminAppointmentAjax.jsp #clinicDayTable');
+                                $('#state_').val('');
+                                $('#hfc_codeC').val('');
+                                $('#hfcBefore').val('');
+                                $('#discipline').val('');
+                                $('#disciplineBefore').val('');
+                                $('#subdisciplineBefore').val('');
+                                $('#subdiscipline').val('');
+                                $('#clinicDay').val('');
+                                $('#dayBefore').val('');
+                                 $('#startdateC').val('');
+                                 $('#enddateC').val('');
+                                 $('#status').val('');
                            }
                            else{
                                alert('error');
@@ -2658,7 +2676,6 @@
                   var _date = $('#startdate').datepicker().val();
                   var _desc = $('#desc').val();
                   var _appTo = $('#appTo').val();
-                  
        
                  _date = _date.split('/');
                 _date = _date[2]+ "-"+_date[1]+"-"+ _date[0];
@@ -2683,6 +2700,10 @@
                              alert('Holiday successful added');
                              $('#holidayTable').load('adminAppointmentAjax.jsp #holidayTable');
                              $('#viewHoliday').load('adminAppointmentAjax.jsp #viewHoliday');
+                            $('#state').val("");
+                            $('#startdate').datepicker().val("");
+                            $('#desc').val("");
+                            $('#appTo').val("");
                          }
                          else if(result === "error")
                          {

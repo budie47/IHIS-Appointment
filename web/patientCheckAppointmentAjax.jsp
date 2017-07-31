@@ -92,7 +92,7 @@
 //                
                 String sqlGetClinicDay = "SELECT day_cd, discipline_cd, subdiscipline_cd, hfc_cd, state_code "
                 + "FROM pms_clinic_day "
-                + "WHERE hfc_cd = '"+hfcCode+"' AND status = 'active' AND day_cd = '"+chosenDayDate+"' AND ('"+timeAppointment+"' BETWEEN start_time AND end_time)";
+                + "WHERE hfc_cd = '"+hfc+"' AND status = 'active' AND day_cd = '"+chosenDayDate+"' AND ('"+timeAppointment+"' BETWEEN start_time AND end_time)";
                 ArrayList<ArrayList<String>> dataGetStates = Conn.getData(sqlGetClinicDay);
                 //out.print(sqlGetClinicDay);
 
