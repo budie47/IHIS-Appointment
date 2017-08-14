@@ -13,14 +13,14 @@
 
 <script type="text/javascript">
     window.history.forward();
-    function noBack() 
-    { 
-        window.history.forward(); 
+    function noBack()
+    {
+        window.history.forward();
     }
 </script>
 
 <%
-        //untuk IE
+    //untuk IE
     response.addHeader("Pragma", "no-cache");
     response.addHeader("Cache-Control", "no-cache");
     response.addHeader("Cache-Control", "no-store");
@@ -28,8 +28,8 @@
     response.addHeader("Cache-Control", "Post-Check=0");
     response.addHeader("Cache-Control", "Pre-Check=0");
     response.addHeader("Expires", "Mon, 1 Jan 2006 05:00:00 GMT");//in the past
-    
-Conn Conn = new Conn();
+
+    Conn Conn = new Conn();
     String username = (String) session.getAttribute("username");
     String ic = (String) session.getAttribute("ic");
     String name = (String) session.getAttribute("USER_NAME");
@@ -38,7 +38,6 @@ Conn Conn = new Conn();
     String hfcSession = (String) session.getAttribute("sessionHFC");
     String hfcName = (String) session.getAttribute("sessionHFC");
 
-    
     String hfcCode = "SELECT Detail_Reference_code, Description "
             + "FROM adm_lookup_detail "
             + "WHERE Master_Reference_code = '0081' AND Description = '" + hfcSession + "' ";
@@ -48,7 +47,7 @@ Conn Conn = new Conn();
 
     if (dataHFCCode.size() > 0) {
         hfc = dataHFCCode.get(0).get(0);
-             session.setAttribute("HEALTH_FACILITY_CODE", hfc);
+        session.setAttribute("HEALTH_FACILITY_CODE", hfc);
     } else {
         hfc = null;
     }
@@ -58,9 +57,8 @@ Conn Conn = new Conn();
             + "FROM pms_duty_roster "
             + "WHERE hfc_cd = '" + hfcSession + "' ";
     ArrayList<ArrayList<String>> dataSQLHFC = Conn.getData(sqlhfc);
-    
-//    out.print(sqlhfc); if (true) { return; }
 
+//    out.print(sqlhfc); if (true) { return; }
 //    out.print(sqlhfc);
     String codeState = dataSQLHFC.get(0).get(0);
     //out.print(codeState);
@@ -127,32 +125,30 @@ Conn Conn = new Conn();
     ArrayList<ArrayList<String>> dataPatientDetails = Conn.getData(sqlPatientDetails);
 
     //out.print(dataPatientDetails.get(0).get(0));
-    String sqlDoctorAvailable ="SELECT doc.*,DATE(pdr.start_date),DATE(pdr.end_date) "
+    String sqlDoctorAvailable = "SELECT doc.*,DATE(pdr.start_date),DATE(pdr.end_date) "
             + "from pms_duty_roster pdr, "
             + "(SELECT USER_ID,LCASE(USER_NAME),OCCUPATION_CODE "
             + "FROM adm_users "
             + "WHERE OCCUPATION_CODE = 'DOCTOR' OR OCCUPATION_CODE = '002'"
             + "ORDER BY LCASE(USER_NAME) ASC)doc "
             + "where doc.USER_ID=pdr.user_id AND pdr.status='active' AND "
-            + "DATE(now()) BETWEEN DATE(start_date) AND DATE(end_date) AND pdr.hfc_cd = '"+hfc+"'";
+            + "DATE(now()) BETWEEN DATE(start_date) AND DATE(end_date) AND pdr.hfc_cd = '" + hfc + "'";
     ArrayList<ArrayList<String>> dataDoctorAvailable = Conn.getData(sqlDoctorAvailable);
-    
+
     //out.print(dataPMI);
     //out.print(hfcCD);
-
-    String sqlAppointment = 
- "SELECT lookSub.appointment_date, lookSub.start_time, lookSub.pmi_no, lookSub.patient_name, lookSub.staff_name ,lookSub.discipline_name, lds.Description "
+    String sqlAppointment
+            = "SELECT lookSub.appointment_date, lookSub.start_time, lookSub.pmi_no, lookSub.patient_name, lookSub.staff_name ,lookSub.discipline_name, lds.Description "
             + "AS subdipline_name, lookSub.appointment_type, lookSub.ID_NO, lookSub.status, lookSub.canceled_reason FROM adm_lookup_detail lds,"
             + " ( SELECT lookDis.appointment_date, lookDis.start_time, lookDis.pmi_no, lookDis.PATIENT_NAME AS patient_name, lookDis.USER_NAME AS staff_name ,ld.Description AS discipline_name, "
             + "lookDis.subdiscipline, lookDis.appointment_type, lookDis.ID_NO, lookDis.status, lookDis.canceled_reason FROM adm_lookup_detail ld, "
             + "( SELECT DATE(pa.appointment_date) AS appointment_date, TIME(pa.start_time) AS start_time, pa.pmi_no, LCASE(pb.PATIENT_NAME) AS PATIENT_NAME, LCASE(au.USER_NAME) AS USER_NAME, "
             + "pa.discipline, pa.subdiscipline, pa.appointment_type, pb.ID_NO, pa.status, pa.canceled_reason FROM pms_appointment pa, pms_patient_biodata pb, adm_users au "
-            + "WHERE pa.pmi_no = pb.PMI_NO AND pa.userid = au.USER_ID AND pa.hfc_cd = '04010101' AND pb.`PMI_NO` = '"+dataPMI+"'  "
+            + "WHERE pa.pmi_no = pb.PMI_NO AND pa.userid = au.USER_ID AND pa.hfc_cd = '04010101' AND pb.`PMI_NO` = '" + dataPMI + "'  "
             + "ORDER BY pa.appointment_date DESC, pa.start_time ASC ) lookDis WHERE lookDis.discipline=ld.Detail_Reference_code AND ld.Master_Reference_code = '0072' AND ld.hfc_cd = '04010101') lookSub "
             + "WHERE lds.Master_Reference_code = '0071' AND lookSub.subdiscipline=lds.Detail_Reference_code AND lds.hfc_cd= '04010101'";
-     //out.print(sqlAppointment);
+    //out.print(sqlAppointment);
     ArrayList<ArrayList<String>> dataAppointment = Conn.getData(sqlAppointment);
-
 
     String pmi;
     String patientName;
@@ -220,813 +216,853 @@ Conn Conn = new Conn();
 <html>
     <title>Patient Page</title>
     <%@include file="header.jsp"%>
+    <%@include file="assets/header.html"%>
     <body>
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-md-10 col-md-offset-1" style="margin-top: 2%; margin-bottom: 2%">
-                    <img src="image/posterHeader.jpg" width="1600" height="345">
+
+        <!-- menu side -->
+        <script>
+            function a()
+            {
+            <%                            try {
+                    String error = request.getParameter("error");
+                    if (error != null) {
+            %>
+                alert('<%=error%>');
+                location.href = 'patientAppointment.jsp';
+            <%
+                    }
+                } catch (Exception e) {
+                }
+            %>
+            }
+            $(document).ready(function () {
+                $('a[data-toggle="tab"]').on('shown.bs.tab', function () {
+                    //save the latest tab; use cookies if you like 'em better:
+                    localStorage.setItem('lastTab', $(this).attr('href'));
+                });
+                //go to the latest tab, if it exists:
+                var lastTab = localStorage.getItem('lastTab');
+                if (lastTab) {
+                    $('a[href=' + lastTab + ']').tab('show');
+                    var a1 = setTimeout("a()", 1000);
+                } else
+                {
+                    // Set the first tab if cookie do not exist
+                    $('a[data-toggle="tab"]:first').tab('show');
+                }
+            });
+
+
+        </script>
+        <div class="col-sm-3 col-md-2 sidebar">
+            <div class="brand"></div>
+            <!-- logo -->
+            <div class="logo">
+                Welcome to <span>iHIS</span>
+            </div>
+            <!-- logo -->
+
+            <!-- profile Sidebar -->
+            <div class="profile">
+                <div class="profile-userpic">
+                    <img src="assets/profile.jpg" class="img-responsive" alt="profile pic">
+                </div>
+                <!-- SIDEBAR USER TITLE -->
+                <div class="profile-usertitle">
+                    <div class="profile-usertitle-name">
+                        <%=username%>
+                    </div>
+                    <div class="profile-usertitle-job">
+                        PATIENT&nbsp;
+                        <li data-toggle="collapse" data-target="#viewExtraProfile" class="collapsed" style="list-style: none; display: inline; cursor: pointer;">
+                            <i class="fa fa-caret-down"></i>
+                        </li>
+                    </div>
+                    <div class="collapse" id="viewExtraProfile">
+                        -
+                        <div class="profile-usertitle-job text-left">
+                            Health Facility: <strong><%//= my_1_hfcName%> <%//=my_1_hfc_cd%></strong>
+                        </div>
+
+                        <div class="profile-usertitle-job text-left">
+                            Discipline: <strong><%//= my_1_dis_name%> <%//=my_1_dis_cd%></strong>
+                        </div>
+
+                        <div class="profile-usertitle-job text-left">
+                            Subdiscipline: <strong><%//= my_1_sub_name%> <%//=my_1_sub_cd%></strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SIDEBAR BUTTONS -->
+                <div class="profile-userbuttons">
+                    <button type="button" class="btn btn-success btn-sm" onclick="window.location.href = '../Entrance/Profile'">Manage Account</button>
+                    <!--<button type="button" class="btn btn-success btn-sm" onclick="clickManageAccount()">Manage Account</button>-->
                 </div>
             </div>
-            <div class="row">
-                <div class="col-md-5 col-md-offset-1 " style="padding-top: 0.5%;">
-                    Welcome <%=username%>
-                </div>
-                <div class="col-md-5 text-right">
-                    <button class="btn btn-info buttonAuthenticate" onclick="window.location.href = 'destroySession.jsp'">Log out</button>
-                </div>
-            </div>   
-            <div class="row">
-                <div class="col-md-2 col-md-offset-1 col-sm-12 col-xs-12 bodyContent">
-                    <script>
-                        function a() 
-                        {
-                            <%
-                            try
-                            {
-                                String error = request.getParameter("error");
-                                if (error != null) 
-                                {
-                                    %>
-                                    alert('<%=error %>');
-                                    location.href = 'patientAppointment.jsp';
-                                    <%
-                                }
-                            } 
-                            catch (Exception e) 
-                            {
-                            }
-                            %>
-                        }
-                        $(document).ready(function() {
-                            $('a[data-toggle="tab"]').on('shown.bs.tab', function () {
-                                //save the latest tab; use cookies if you like 'em better:
-                                localStorage.setItem('lastTab', $(this).attr('href'));
-                            });
-                            //go to the latest tab, if it exists:
-                            var lastTab = localStorage.getItem('lastTab');
-                            if (lastTab) {
-                                $('a[href=' + lastTab + ']').tab('show');
-                                var a1 = setTimeout("a()", 1000);
-                            } else
-                            {
-                                // Set the first tab if cookie do not exist
-                                $('a[data-toggle="tab"]:first').tab('show');
-                            }
-                        });
 
+            <hr/>
+            <!-- profile Sidebar -->
+            <ul class="nav nav-sidebar" id="side-menu">
+                <li id="tab"><a data-toggle="tab" class="editTab" href="#home"><i class="fa fa-chevron-right sideIcon" aria-hidden="true" ></i>Home</a></li>
+                <li class="dropdown" id="tab"><a class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-chevron-right sideIcon" aria-hidden="true" ></i>Check Availability<span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a data-toggle="tab" class="dropdown-item" href="#doctorDirectory">Doctor Availability</a></li>
+                        <li><a data-toggle="tab" class="dropdown-item" href="#clinicDayDirectory">Clinic Availability</a></li>
+                    </ul>
+                </li>
+                <li id="tab"><a data-toggle="tab" class="editTab" href="#viewholiday"><i class="fa fa-chevron-right sideIcon" aria-hidden="true" ></i>View Holiday</a></li>
+                <li id="tab"><a data-toggle="tab" class="editTab" href="#applyAppointment"><i class="fa fa-chevron-right sideIcon" aria-hidden="true" ></i>Make Appointment</a></li>
+                <li id="tab"><a data-toggle="tab" class="editTab" href="#viewAppointment" id="viewApp"><i class="fa fa-chevron-right sideIcon" aria-hidden="true" ></i>View Appointment</a></li>
+                <li id="tab"><a href="http://www.utem.edu.my/pusat_kesihatan/en/" target="_blank"><i class="fa fa-chevron-right sideIcon" aria-hidden="true" ></i>University Health Centre</a></li>
+            </ul>  
+        </div>
+        <!-- menu side -->
 
-                    </script>
-                    <h3 class="headerTitle">Categories</h3>
-                    <nav class="navbar navbar-inverse" style="background-color: white; ">
-                        <div class="container-fluid">
-
-                            <div class="navbar-header">
-                                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
-                                    <span class="icon-bar"></span>
-                                    <span class="icon-bar"></span>
-                                    <span class="icon-bar"></span>
-                                </button>
-                            </div>
-                            <div class="collapse navbar-collapse" id="myNavbar">
-                                <ul class="nav navbar-nav"  style="margin-bottom: 5%;" id="navBarUl">
-                                    <li id="tab"><a data-toggle="tab" class="editTab" href="#home">Home</a></li>
-                                    <li class="dropdown" id="tab"><a class="dropdown-toggle" data-toggle="dropdown">Check Availability<span class="caret"></span></a>
-                                        <ul class="dropdown-menu">
-                                            <li><a data-toggle="tab" class="dropdown-item" href="#doctorDirectory">Doctor Availability</a></li>
-                                            <li><a data-toggle="tab" class="dropdown-item" href="#clinicDayDirectory">Clinic Availability</a></li>
-                                        </ul>
-                                    </li>
-                                    <li id="tab"><a data-toggle="tab" class="editTab" href="#viewholiday">View Holiday</a></li>
-                                    <li id="tab"><a data-toggle="tab" class="editTab" href="#applyAppointment">Make Appointment</a></li>
-                                    <li id="tab"><a data-toggle="tab" class="editTab" href="#viewAppointment" id="viewApp">View Appointment</a></li>
-                                    <li id="tab"><a href="http://www.utem.edu.my/pusat_kesihatan/en/" target="_blank">University Health Centre</a></li>
-                                </ul> 
-                            </div>
-                        </div>
-                    </nav>
-                </div> 
-                <div class="col-md-8 col-sm-12 col-xs-12 bodyContent">
-                    <div class="tab-content">
-                        <div id="home" class="tab-pane active">
-                            <h3 class="headerTitle">What is e-Appointment</h3>
-                            <p style="text-align: justify"><strong>e-Appointment is a Web Bases application that is used to manage the patient appointment record by using a web based. 
-                                    Moreover this system is benefited for patients in order for them to book their appointment by themselves. As this web based application is designed 
-                                    in a responsive form so that it is also will be able to be opened in any mobile devices. User will be using a web browser to open the application 
-                                    then perform the booking appointment activities. Before performing an appointment user need to check the doctor availability and also view a holiday. 
-                                    First time user need to attend to the clinic in order to use the system but sign up is needed before user can proceed to sign in into the system.
-                            </strong></p>
-                            <h3 class="headerTitle" style="margin-top: 3%;">How to use the system ?</h3>
-                            <p><strong>Step 1: Patients need to attend to the clinic/hospital as a First Time User in order to use the system</strong></p>
-                            <p><strong>Step 2: Patients need to Sign Up and fill in the Register Form </strong></p>
-                            <p><strong>Step 3: Patients can use the system by Signing in into the system</strong></p>
-                            <p><strong>Step 4: Patients have option to  check the doctor availability and view holiday before make an appointment or directly make an appointment</strong></p>
-                            <p><strong>Step 5: Patients can view their previous appointment at the View Appointment tab</strong></p>
-                            <h3 class="headerTitle" style="margin-top: 3%;">Our Location</h3>
-
-                            <div class="google_map">
-                                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15946.294237778036!2d102.32034365!3d2.3109037500000005!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31d1
-                                        e46c6eaa869b%3A0xb8935957e3536888!2sUniversiti+Teknikal+Malaysia+Melaka!5e0!3m2!1sen!2s!4v1433745195746" width="700" height="450" frameborder="0"></iframe></div>
-                            View <a href="https://www.google.com/maps/place/Universiti+Teknikal+Malaysia+Melaka/@2.313859,102.3190038,17z/data=!3m1!4b1!4m2!3m1!1s0x31d1e46c6eaa869b:0xb8935957e3536888" class="large_map">Utem Clinic</a> in a larger map        
-                        </div>
-                      <div id="doctorDirectory" class="tab-pane fade">
-                            <h3 class="headerTitle">Doctor Availability</h3>
-                            <p>Search Area:</p>                     
-                            <div class='row' style="padding-bottom: 2%; padding-top: 2%; padding-left: 2%; background-color: #d9d9d9; margin-bottom: 4%">
-                                <div class="col-md-6 col-sm-12 col-xs-12">
-                                    <form>
-                                        <!--<div class="form-inline" >-->
-                                        <div class="form-group">
-                                            <input type="text" name="searchDateAvailability"  id="dateDoctorA" class="form-control" placeholder="Search Appointment Date" required="required"/>
-                                        </div>
-                                        <div class="form-group"> 
-                                            <!--<div class="col-sm-10">--> 
-                                            <select class="form-control" id="selectDoctorA" placeholder="Search Doctor Name"  name="searchDoctorAvailability" required>
-                                                <option></option>
-                                                <%   String sqlDctorAvailability = "SELECT doc.*,pdr.start_date,pdr.end_date "
-                                                            + "from pms_duty_roster pdr, "
-                                                            + "(SELECT USER_ID,USER_NAME,OCCUPATION_CODE "
-                                                            + "FROM adm_user  "
-                                                            + "WHERE OCCUPATION_CODE = 'DOCTOR')doc "
-                                                            + "where doc.USER_ID=pdr.user_id AND pdr.status='active' AND "
-                                                            + "DATE(now()) BETWEEN DATE(start_date) AND DATE(end_date)";
-                                                    ArrayList<ArrayList<String>> dataDctorAvailability = Conn.getData(sqlDctorAvailability);
-
-//                                                        DateTime dt = DateTime.now();
-//                                                        String todaysDate =(String) dt.toString("dd/MM/yyyy");
-                                                    if (dataDctorAvailability.size() > 0) {
-                                                        for (int i = 0; i < dataDctorAvailability.size(); i++) {%>
-                                                <option value="<%=dataDctorAvailability.get(i).get(1)%>"><%=dataDctorAvailability.get(i).get(1)%></option>
-                                                <%}
-                                                    }
-                                                %>
-                                            </select>
-                                            <!--</div>-->
-                                        </div>
-                                        <div class="form-group">
-                                            <button class="btn btn-xs btn-success" id="searchDoctor">Search</button>
-                                        </div>
-                                        <!--</div>-->
-                                    </form>
-
-                                    <button class="btn btn-info" id="todaySearch">Today's Availability</button>
-
+        <!-- main -->
+        <div class="main" style="background: #f2f4f8;">
+            <!-- Menu Top -->
+            <nav class="navbar navbar-static-top">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div id="navbar" class="navbar-collapse collapse">
+                            <ul class="nav navbar-nav navbar-left back" style="">
+                                <li><a href="../Entrance/dashboard.jsp" title="Back"><i class=" fa fa-chevron-left"></i></a></li>
+                            </ul>
+                            <div class="nav navbar-nav navbar-left" style=" margin: 6px auto;">
+                                <div style="padding: 10px 20px; display: block; font-size: 22px;">
+                                    <span style="font-size: 22px;">e-Appointment</span>
                                 </div>
                             </div>
-                            <div class="table-responsive">
-                                <table class="table table-bordered table-hover" id="doctorAvailabilityTable">
-                                    <thead>
-                                        <tr>
-                                            <th><center>No</center></th>
-                                    <th><center>Doctor Name</center></th>
-                                    <th><center>Availability</center></th>
-                                    <th><center>Available/Unavailable Reason</center></th>
-                                    <th><center>Not Available On (Booked Time)</center></th>
-                                    <th><center>Duty Period</center></th>
-                                    </tr>
-                                    </thead>
-                                    <tbody><%
-                                        for (int i = 0; i < dataDoctorAvailable.size(); i++) {
-                                            Date today = new Date();
-                                            String expectedPattern = "yyyy-MM-dd";
-                                            SimpleDateFormat formatter = new SimpleDateFormat(expectedPattern);
-                                            String startDateFromDB = dataDoctorAvailable.get(i).get(3);
-                                            String endDateFromDB = dataDoctorAvailable.get(i).get(4);
-                                            Date startDateDB = formatter.parse(startDateFromDB);
-                                            Date endDateDB = formatter.parse(endDateFromDB);
-
-                                            SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy");
-                                            String dateStart = DATE_FORMAT.format(startDateDB);
-                                            String dateEnd = DATE_FORMAT.format(endDateDB);%>
-                                        <tr id="doctorRow">
-                                            <td><center><%out.print(i + 1);%></center></td>
-                                    <td><left><%=dataDoctorAvailable.get(i).get(1)%></left></td>
-                                        <%
-                                            String doctorId = dataDoctorAvailable.get(i).get(0);
-                                            String doctorAvailablity = "select * from pms_staff_leave "
-                                                    + "where status='approve' AND "
-                                                    + "DATE(now()) BETWEEN DATE(start_leave_date) "
-                                                    + "AND DATE(end_leave_date) AND user_id='" + doctorId + "' ";
-                                            ArrayList<ArrayList<String>> dataDoctorAvailablity = Conn.getData(doctorAvailablity);
-
-                                            if (dataDoctorAvailablity.size() > 0) {
-                                                for (int index = 0; index < dataDoctorAvailablity.size(); index++) {
-                                        %>
-                                    <td><center>not available</center></td>
-                                    <td><center><%=dataDoctorAvailablity.get(index).get(7)%></center></td> 
-                                    <td><center>-</center></td> 
-                                        <%
-                                            }
-                                        } else { %>
-                                    <td><center>available</center></td>
-                                    <td><center>on duty</center></td> 
-                                        <%
-                                            String dateNotAvailable = "SELECT TIME(start_time) "
-                                                    + "FROM pms_appointment "
-                                                    + "WHERE date(appointment_date) = date(now()) AND userid = '" + doctorId + "' AND status = 'active'";
-                                            ArrayList<ArrayList<String>> dataDateNotAvailable = Conn.getData(dateNotAvailable);
-                                        %>
-                                    <td>
-                                    <center>
-                                        <%
-                                            if (dataDateNotAvailable.size() > 0) {
-
-                                                for (int j = 0; j < dataDateNotAvailable.size(); j++) {
-                                                    out.print(dataDateNotAvailable.get(j).get(0));
-                                                    out.print(",");
-                                                }
-                                            } else {
-                                                out.print("all time available");
-
-                                            }
-                                        %> 
-                                    </center>
-                                    </td>
-                                    <% }%>
-
-                                    <td><center><%=dateStart%> <% out.print('-');%><%=dateEnd%></center></td> 
-
-                                    </tr>
-                                    <%}%>
-                                    </tbody>
-                                </table>
-                            </div>
+                            <ul class="nav navbar-nav navbar-right logout" style="">
+                                <li class="visible-md visible-lg"><a href="Profile" title="Log Out">Welcome <span id="welcome"><%=username%></span></a></li>
+                                <li><a onclick="window.location.href = 'destroySession.jsp'" title="Log Out"><i class=" fa fa-power-off"></i></a></li>
+                            </ul>
                         </div>
-                        <div id="clinicDayDirectory" class="tab-pane fade">
-                            <h3 class="headerTitle">Clinic Availability</h3>
-                            <div class="table-responsive">
-                                <table class="table table-bordered table-hover">
-                                    <thead>
-                                        <tr> 
-                                            <th><center>No</center></th>
-                                            <th><center>State</center></th>
-                                            <th><center>Health Facility Name</center></th>
-                                            <th><center>Discipline</center></th>
-                                            <th><center>Subdicipline</center></th>
-                                            <th><center>Clinic Day</center></th>
-                                            <th><center>Start Time</center></th>
-                                            <th><center>End Time</center></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <%
-                                        if (dataClinicDay.size() > 0) 
-                                        {
-                                            for (int i = 0; i < dataClinicDay.size(); i++) 
-                                            {%> 
-                                                <tr>
-                                                    <td><center><%out.print(i+1);%></center></td>
-                                                    <td><left><%=dataClinicDay.get(i).get(8)%></left></td>
-                                                    <td><left><%=dataClinicDay.get(i).get(9)%></left></td>
-                                                    <td><left><%=dataClinicDay.get(i).get(10)%></left></td>
-                                                    <td><left><%=dataClinicDay.get(i).get(11)%></left></td>
-                                                    <td><left><%=dataClinicDay.get(i).get(2)%></left></td>
-                                                    <td><center><%=dataClinicDay.get(i).get(5)%></center></td>
-                                                    <td><center><%=dataClinicDay.get(i).get(6)%></center></td>
-                                                </tr>
-                                         <% }
-                                        }%>
-                                    </tbody>
-                                </table>
+                    </div>
+                </div>
+            </nav>
+            <!-- Menu Top -->
+
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-12 bodyContent">
+                        <div class="thumbnail">
+                        <div class="tab-content">
+                            <div id="home" class="tab-pane active">
+                                <h3 class="headerTitle">What is e-Appointment</h3>
+                                <p style="text-align: justify"><strong>e-Appointment is a Web Bases application that is used to manage the patient appointment record by using a web based. 
+                                        Moreover this system is benefited for patients in order for them to book their appointment by themselves. As this web based application is designed 
+                                        in a responsive form so that it is also will be able to be opened in any mobile devices. User will be using a web browser to open the application 
+                                        then perform the booking appointment activities. Before performing an appointment user need to check the doctor availability and also view a holiday. 
+                                        First time user need to attend to the clinic in order to use the system but sign up is needed before user can proceed to sign in into the system.
+                                    </strong></p>
+                                <h3 class="headerTitle" style="margin-top: 3%;">How to use the system ?</h3>
+                                <p><strong>Step 1: Patients need to attend to the clinic/hospital as a First Time User in order to use the system</strong></p>
+                                <p><strong>Step 2: Patients need to Sign Up and fill in the Register Form </strong></p>
+                                <p><strong>Step 3: Patients can use the system by Signing in into the system</strong></p>
+                                <p><strong>Step 4: Patients have option to  check the doctor availability and view holiday before make an appointment or directly make an appointment</strong></p>
+                                <p><strong>Step 5: Patients can view their previous appointment at the View Appointment tab</strong></p>
+                                <h3 class="headerTitle" style="margin-top: 3%;">Our Location</h3>
+
+                                <div class="google_map">
+                                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15946.294237778036!2d102.32034365!3d2.3109037500000005!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31d1
+                                            e46c6eaa869b%3A0xb8935957e3536888!2sUniversiti+Teknikal+Malaysia+Melaka!5e0!3m2!1sen!2s!4v1433745195746" width="700" height="450" frameborder="0"></iframe></div>
+                                View <a href="https://www.google.com/maps/place/Universiti+Teknikal+Malaysia+Melaka/@2.313859,102.3190038,17z/data=!3m1!4b1!4m2!3m1!1s0x31d1e46c6eaa869b:0xb8935957e3536888" class="large_map">Utem Clinic</a> in a larger map        
                             </div>
-                        </div>
-                        <div id="viewholiday" class="tab-pane fade">
-                            <h3 class="headerTitle">View Holiday</h3>
-                            <div class="table-responsive">
-                                <table class="table table-bordered table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th><center>No</center></th>
-                                            <th><center>Date</center></th>
-                                            <th><center>Description</center></th>
-                                            <th><center>State Name</center></th>
-                                            <th><center>Applicable to</center></th>
-                                            <!--<th><center>Status</center></th>-->
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <%
-                                            if (data.size() > 0) {
-                                                for (int i = 0; i < data.size(); i++) {
-                                                    Date today = new Date();
-                                                    String expectedPattern = "yyyy-MM-dd HH:mm:ss.SSS";
-                                                    SimpleDateFormat formatter = new SimpleDateFormat(expectedPattern);
-                                                    String dateFromDB = data.get(i).get(4);
-                                                    Date dateDB = formatter.parse(dateFromDB);
-
-                                                    SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy");
-                                                    String date = DATE_FORMAT.format(dateDB);
-
-                                                    SimpleDateFormat df = new SimpleDateFormat("EEEE");
-                                                    String newDate = df.format(dateDB);
-                                                    //out.print(newDate);
-
-                                        %>
-                                        <tr>
-                                            <td><center><% out.print(i + 1);%></center></td>
-                                            <td><center><%=date%></center></td>
-                                            <td><left><%=data.get(i).get(5)%></left></td>
-                                            <td><left><%=data.get(i).get(10)%></left></td>
-                                            <td><left><%=data.get(i).get(6)%></left></td> 
-                                        </tr>
-                                    <%
-                                                if (dateDB.before(today)) {
-                                                    RMIConnector rmic = new RMIConnector();
-                                                    String sqlInsert = "UPDATE pms_holiday SET status='inactive' WHERE holiday_date < date(now());";
-
-                                                    boolean isInsert = rmic.setQuerySQL(Conn.HOST, Conn.PORT, sqlInsert);
-                                                }
-                                            }
-                                        }%>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                        <div id="applyAppointment" class="tab-pane fade">
-                            <h3 class="headerTitle">Make Appointment</h3>
-                            <p style="color: red; margin-bottom: 2%"> *** Please make sure that you have check the availability and also view the holiday before make an appointment</p>
-                            
-                            <p><b>PMI No : </b><% out.print(pmi);%> </p>
-                            <p><b>ID No : </b><% out.print(idPatient); %></p>
-                            <p><b>Patient Name : </b><% out.print(patientName);%></p>
-                            <input type="hidden" name="pmiNo" value="<%=pmi%>" id="pmiNo">
-                            <input type="hidden" name="idNo" value="<%=idPatient%>" id="idNo">
-                            <input type="hidden" name="patientName" value="<%=patientName%>" id="patientName">
-                            <input type="hidden" name="HFCCode" value="<%=hfc%>" id="HFCCode">
-                            <input type="hidden" name="ic" value="<%=ic%>" id="ic">
-                             <input type="hidden" name="role" value="<%=title%>" id="role">
-
-
-                            <%
-                                //String pmi= request.getParameter("dateAppointmentBefore");
-                                session.setAttribute("pmiToBeUsed", pmi);
-                                session.setAttribute("idPatientToBeUsed", idPatient);
-                                session.setAttribute("patientNameToBeUsed", patientName);
-                            %>
-                            <form class="form-horizontal">
-                                <%
-                                    String sql = "SELECT * "
-                                            + "FROM pms_patient_biodata "
-                                            + "WHERE PMI_NO='" + e27 + "' OR NEW_IC_NO = '" + e28 + "' OR ID_TYPE = '" + e29 + "' OR ID_NO = '" + e30 + "'";
-                                    ArrayList<ArrayList<String>> dataPatient = Conn.getData(sql);
-
-                                    String sqlPatientApp = "SELECT * "
-                                            + "FROM pms_appointment";
-                                    ArrayList<ArrayList<String>> dataPatientApp = Conn.getData(sqlPatientApp);
-
-                                %>
-                                <div class="row">
-                                    <div class="col-md-8 col-md-offset-2 col-sm-12 col-xs-12" style="background-color: #f2f2f2; padding-top: 2%; padding-bottom: 1%; margin-bottom: 1%">
-                                        <div class="form-group">
-                                            <label class="control-label col-sm-2" for="disApp">Discipline : </label>  
-                                            <div class="col-sm-10">   
-                                                <input  name="disApp" type="text" value="Outpatient Discipline"  id="disciple" class="form-control" readonly>
+                            <div id="doctorDirectory" class="tab-pane fade">
+                                <h3 class="headerTitle">Doctor Availability</h3>
+                                <p>Search Area:</p>                     
+                                <div class='row' style="padding-bottom: 2%; padding-top: 2%; padding-left: 2%; background-color: #d9d9d9; margin-bottom: 4%">
+                                    <div class="col-md-6 col-sm-12 col-xs-12">
+                                        <form>
+                                            <!--<div class="form-inline" >-->
+                                            <div class="form-group">
+                                                <input type="text" name="searchDateAvailability"  id="dateDoctorA" class="form-control" placeholder="Search Appointment Date" required="required"/>
                                             </div>
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="control-label col-sm-2" for="subDisApp">Subdicipline : </label>  
-                                            <div class="col-sm-10">   
-                                                <input  name="subDisApp" type="text"  value="General Medicine" id="subdisciplineAppointment" class="form-control" readonly>
-                                            </div>
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="control-label col-sm-2" for="appD">*Doctor : </label>  
-                                            <div class="col-sm-10">   
-                                                <select class="form-control" id="doctorApp" name="appDoc" required>
+                                            <div class="form-group"> 
+                                                <!--<div class="col-sm-10">--> 
+                                                <select class="form-control" id="selectDoctorA" placeholder="Search Doctor Name"  name="searchDoctorAvailability" required>
                                                     <option></option>
-                                                    <%  
-                                                       String sqlDoc = "SELECT USER_ID,USER_NAME "
-                                                                + "FROM adm_users "
-                                                                + "WHERE HEALTH_FACILITY_CODE = '" + hfc + "' AND OCCUPATION_CODE = '002'";
-                                                        ArrayList<ArrayList<String>> dataDoctor = Conn.getData(sqlDoc);
+                                                    <%   String sqlDctorAvailability = "SELECT doc.*,pdr.start_date,pdr.end_date "
+                                                                + "from pms_duty_roster pdr, "
+                                                                + "(SELECT USER_ID,USER_NAME,OCCUPATION_CODE "
+                                                                + "FROM adm_user  "
+                                                                + "WHERE OCCUPATION_CODE = 'DOCTOR')doc "
+                                                                + "where doc.USER_ID=pdr.user_id AND pdr.status='active' AND "
+                                                                + "DATE(now()) BETWEEN DATE(start_date) AND DATE(end_date)";
+                                                        ArrayList<ArrayList<String>> dataDctorAvailability = Conn.getData(sqlDctorAvailability);
 
-                                                        if (e34 == null) {
-                                                            if (dataDoctor.size() > 0) {
-                                                                for (int i = 0; i < dataDoctor.size(); i++) {%>
-                                                    <option value="<%=dataDoctor.get(i).get(0)%>"><%=dataDoctor.get(i).get(1)%></option>
-                                                    <% }
+    //                                                        DateTime dt = DateTime.now();
+    //                                                        String todaysDate =(String) dt.toString("dd/MM/yyyy");
+                                                        if (dataDctorAvailability.size() > 0) {
+                                                            for (int i = 0; i < dataDctorAvailability.size(); i++) {%>
+                                                    <option value="<%=dataDctorAvailability.get(i).get(1)%>"><%=dataDctorAvailability.get(i).get(1)%></option>
+                                                    <%}
                                                         }
-                                                    } else {
-                                                        for (int i = 0; i < dataDoctor.size(); i++) {
-                                                            if (e34.equals(dataDoctor.get(i).get(0))) {%>
-                                                    <option value="<%= e34%>" selected><%=dataDoctor.get(i).get(3)%></option>
-                                                    <%} else {%>
-                                                    <option value="<%= dataDoctor.get(i).get(0)%>"><%=dataDoctor.get(i).get(1)%></option> <%
-                                                                }
-                                                            }
+                                                    %>
+                                                </select>
+                                                <!--</div>-->
+                                            </div>
+                                            <div class="form-group">
+                                                <button class="btn btn-xs btn-success" id="searchDoctor">Search</button>
+                                            </div>
+                                            <!--</div>-->
+                                        </form>
 
-                                                        }%>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="control-label col-sm-2" for="appDate">*Appointment Date : </label>  
-                                            <div class="col-sm-10">   
-                                                <%if (e32 == null) {%>
-                                                <input  name="appDate" type="text" id="datepicker"  class="form-control" required>
-                                                <%} else {%>
-                                                <input name="appDate" value="<%= e32%>" type="date" id="datepicker" class="form-control" required>
-                                                <%}%>
-                                            </div>
-                                        </div>
-                                        <script>
-                                            var today = new Date().toISOString().split('T')[0];
-                                            document.getElementsByName("appDate")[0].setAttribute('min', today);
-                                        </script>
-                                        <div class="form-group">
-                                            <label class="control-label col-sm-2" for="appTime">*Appointment Time : </label>  
-                                            <div class="col-sm-10">   
-                                                <select class="form-control" id="timepicker" name="appTime" required>
-                                                    <option></option>
-                                                    <%if (e33 == null) {%>
-                                                    <option value="09:00:00"><%out.print("09:00:00");%></option>
-                                                    <option value="09:15:00"><%out.print("09:15:00");%></option>
-                                                    <option value="09:30:00"><%out.print("09:30:00");%></option>
-                                                    <option value="09:45:00"><%out.print("09:45:00");%></option>
-                                                    <option value="10:00:00"><%out.print("10:00:00");%></option>
-                                                    <option value="10:15:00"><%out.print("10:15:00");%></option>
-                                                    <option value="10:30:00"><%out.print("10:30:00");%></option>
-                                                    <option value="10:35:00"><%out.print("10:35:00");%></option>
-                                                    <option value="10:40:00"><%out.print("10:40:00");%></option>
-                                                    <option value="10:45:00"><%out.print("10:45:00");%></option>
-                                                    <option value="11:00:00"><%out.print("11:00:00");%></option>
-                                                    <option value="11:15:00"><%out.print("11:15:00");%></option>
-                                                    <option value="11:30:00"><%out.print("11:30:00");%></option>
-                                                    <option value="11:45:00"><%out.print("11:45:00");%></option>
-                                                    <option value="12:00:00"><%out.print("12:00:00");%></option>
-                                                    <option value="12:15:00"><%out.print("12:15:00");%></option>
-                                                    <option value="12:30:00"><%out.print("12:30:00");%></option>
-                                                    <option value="12:45:00"><%out.print("12:45:00");%></option>
-                                                    <option value="13:00:00"><%out.print("13:00:00");%></option>
-                                                    <option value="13:15:00"><%out.print("13:15:00");%></option>
-                                                    <option value="13:30:00"><%out.print("13:30:00");%></option>
-                                                    <option value="13:45:00"><%out.print("13:45:00");%></option>
-                                                    <option value="14:00:00"><%out.print("14:00:00");%></option>
-                                                    <option value="14:15:00"><%out.print("14:15:00");%></option>
-                                                    <option value="14:30:00"><%out.print("14:30:00");%></option>
-                                                    <option value="14:45:00"><%out.print("14:45:00");%></option>
-                                                    <option value="15:00:00"><%out.print("15:00:00");%></option>
-                                                    <option value="15:15:00"><%out.print("15:15:00");%></option>
-                                                    <option value="15:30:00"><%out.print("15:30:00");%></option>
-                                                    <option value="15:45:00"><%out.print("15:45:00");%></option>
-                                                    <option value="16:00:00"><%out.print("16:00:00");%></option>
-                                                    <option value="16:15:00"><%out.print("16:15:00");%></option>
-                                                    <option value="16:30:00"><%out.print("16:30:00");%></option>
-                                                    <%} else {%>
-                                                    <option value="09:00:00"><%out.print("09:00:00");%></option>
-                                                    <option value="09:15:00"><%out.print("09:15:00");%></option>
-                                                    <option value="09:30:00"><%out.print("09:30:00");%></option>
-                                                    <option value="09:45:00"><%out.print("09:45:00");%></option>
-                                                    <option value="10:00:00"><%out.print("10:00:00");%></option>
-                                                    <option value="10:15:00"><%out.print("10:15:00");%></option>
-                                                    <option value="10:30:00"><%out.print("10:30:00");%></option>
-                                                    <option value="10:35:00"><%out.print("10:35:00");%></option>
-                                                    <option value="10:40:00"><%out.print("10:40:00");%></option>
-                                                    <option value="10:45:00"><%out.print("10:45:00");%></option>
-                                                    <option value="11:00:00"><%out.print("11:00:00");%></option>
-                                                    <option value="11:15:00"><%out.print("11:15:00");%></option>
-                                                    <option value="11:30:00"><%out.print("11:30:00");%></option>
-                                                    <option value="11:45:00"><%out.print("11:45:00");%></option>
-                                                    <option value="12:00:00"><%out.print("12:00:00");%></option>
-                                                    <option value="12:15:00"><%out.print("12:15:00");%></option>
-                                                    <option value="12:30:00"><%out.print("12:30:00");%></option>
-                                                    <option value="12:45:00"><%out.print("12:45:00");%></option>
-                                                    <option value="13:00:00"><%out.print("13:00:00");%></option>
-                                                    <option value="13:15:00"><%out.print("13:15:00");%></option>
-                                                    <option value="13:30:00"><%out.print("13:30:00");%></option>
-                                                    <option value="13:45:00"><%out.print("13:45:00");%></option>
-                                                    <option value="14:00:00"><%out.print("14:00:00");%></option>
-                                                    <option value="14:15:00"><%out.print("14:15:00");%></option>
-                                                    <option value="14:30:00"><%out.print("14:30:00");%></option>
-                                                    <option value="14:45:00"><%out.print("14:45:00");%></option>
-                                                    <option value="15:00:00"><%out.print("15:00:00");%></option>
-                                                    <option value="15:15:00"><%out.print("15:15:00");%></option>
-                                                    <option value="15:30:00"><%out.print("15:30:00");%></option>
-                                                    <option value="15:45:00"><%out.print("15:45:00");%></option>
-                                                    <option value="16:00:00"><%out.print("16:00:00");%></option>
-                                                    <option value="16:15:00"><%out.print("16:15:00");%></option>
-                                                    <option value="16:30:00"><%out.print("16:30:00");%></option>
-                                                    <%} %>
-                                                </select>
-                                            </div>
-                                        </div> 
-                                        <div class="form-group">
-                                            <label class="control-label col-sm-2" for="appType">*Appointment Type : </label>  
-                                            <div class="col-sm-10">   
-                                                <select class="form-control" id="typeAppointment" name="appType" required>
-                                                    <option></option>
-                                                    <%
-                                                        String sqlAppType = "SELECT * FROM lookup_detail "
-                                                                + "WHERE Master_Ref_code = '0086' ";
-                                                        ArrayList<ArrayList<String>> dataAppType = Conn.getData(sqlAppType);
+                                        <button class="btn btn-info" id="todaySearch">Today's Availability</button>
 
-                                                        if (e48 == null) {
-                                                            if (dataAppType.size() > 0) {
-                                                                for (int i = 0; i < dataAppType.size(); i++) {%>
-                                                    <option value="<%=dataAppType.get(i).get(2)%>"><%=dataAppType.get(i).get(2)%></option>
-                                                    <% }
-                                                            }
-                                                        } else {
-                                                        }%>
-                                                </select>
-                                            </div>
-                                        </div>
                                     </div>
                                 </div>
-                                <div class="row">
-                                    <div class="col-md-8 col-md-offset-2 col-sm-12 col-xs-12">
-                                        <button class="btn btn-xs btn-success"  value="Check" style="margin-bottom: 6%" id="check">Check</button>
-                                        <button class="btn btn-xs btn-success" type="reset" value="Reset" style="margin-bottom: 6%">Reset</button>
-                                    </div>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-hover" id="doctorAvailabilityTable">
+                                        <thead>
+                                            <tr>
+                                                <th><center>No</center></th>
+                                        <th><center>Doctor Name</center></th>
+                                        <th><center>Availability</center></th>
+                                        <th><center>Available/Unavailable Reason</center></th>
+                                        <th><center>Not Available On (Booked Time)</center></th>
+                                        <th><center>Duty Period</center></th>
+                                        </tr>
+                                        </thead>
+                                        <tbody><%
+                                            for (int i = 0; i < dataDoctorAvailable.size(); i++) {
+                                                Date today = new Date();
+                                                String expectedPattern = "yyyy-MM-dd";
+                                                SimpleDateFormat formatter = new SimpleDateFormat(expectedPattern);
+                                                String startDateFromDB = dataDoctorAvailable.get(i).get(3);
+                                                String endDateFromDB = dataDoctorAvailable.get(i).get(4);
+                                                Date startDateDB = formatter.parse(startDateFromDB);
+                                                Date endDateDB = formatter.parse(endDateFromDB);
+
+                                                SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy");
+                                                String dateStart = DATE_FORMAT.format(startDateDB);
+                                                String dateEnd = DATE_FORMAT.format(endDateDB);%>
+                                            <tr id="doctorRow">
+                                                <td><center><%out.print(i + 1);%></center></td>
+                                        <td><left><%=dataDoctorAvailable.get(i).get(1)%></left></td>
+                                            <%
+                                                String doctorId = dataDoctorAvailable.get(i).get(0);
+                                                String doctorAvailablity = "select * from pms_staff_leave "
+                                                        + "where status='approve' AND "
+                                                        + "DATE(now()) BETWEEN DATE(start_leave_date) "
+                                                        + "AND DATE(end_leave_date) AND user_id='" + doctorId + "' ";
+                                                ArrayList<ArrayList<String>> dataDoctorAvailablity = Conn.getData(doctorAvailablity);
+
+                                                if (dataDoctorAvailablity.size() > 0) {
+                                                    for (int index = 0; index < dataDoctorAvailablity.size(); index++) {
+                                            %>
+                                        <td><center>not available</center></td>
+                                        <td><center><%=dataDoctorAvailablity.get(index).get(7)%></center></td> 
+                                        <td><center>-</center></td> 
+                                            <%
+                                                }
+                                            } else { %>
+                                        <td><center>available</center></td>
+                                        <td><center>on duty</center></td> 
+                                            <%
+                                                String dateNotAvailable = "SELECT TIME(start_time) "
+                                                        + "FROM pms_appointment "
+                                                        + "WHERE date(appointment_date) = date(now()) AND userid = '" + doctorId + "' AND status = 'active'";
+                                                ArrayList<ArrayList<String>> dataDateNotAvailable = Conn.getData(dateNotAvailable);
+                                            %>
+                                        <td>
+                                        <center>
+                                            <%
+                                                if (dataDateNotAvailable.size() > 0) {
+
+                                                    for (int j = 0; j < dataDateNotAvailable.size(); j++) {
+                                                        out.print(dataDateNotAvailable.get(j).get(0));
+                                                        out.print(",");
+                                                    }
+                                                } else {
+                                                    out.print("all time available");
+
+                                                }
+                                            %> 
+                                        </center>
+                                        </td>
+                                        <% }%>
+
+                                        <td><center><%=dateStart%> <% out.print('-');%><%=dateEnd%></center></td> 
+
+                                        </tr>
+                                        <%}%>
+                                        </tbody>
+                                    </table>
                                 </div>
-                            </form>
-                        </div>
-                        <div id="viewAppointment" class="tab-pane fade">
-                            <h3 class="headerTitle">View Appointment</h3>
-                            <p><b>PMI No : </b><% out.print(pmi);%> </p>
-                            <p><b>ID No : </b><% out.print(idPatient); %></p>
-                            <p><b>Patient Name : </b><% out.print(patientName); %></p>
-                            
-                                <p><b>Date From : </b><input type="text" name="dateFrom" value="" id="dateFrom" required></p>
-                                <p><b>Date To : </b><input type="text"  name="dateTo" value="" id="dateTo" required>
-<!--                                    <button class="btn btn-xs btn-success" type="submit" value="Check Your Date" formaction="patientAppointmentSelectDate.jsp">Check Your Date</button></p>-->
-                                <button class="btn btn-xs btn-success" value="Check Your Date" id="checkDate">Check Your Date</button></p>
-                             
-                            <table class="table table-bordered table-hover">
-                                <thead>
-                                    <tr>
-                                        <th style="background-color : yellow;"></th>
-                                        <th>Canceled Appointment</th>
-                                        <th style="background-color : #8cff66;"></th>
-                                        <th>Upcoming Appointment</th>
-                                        <th style="background-color : red;"></th>
-                                        <th>Past Appointment</th>
-                                    </tr>
-                                </thead>
-                            </table>
-                            <div class="table-responsive" id="appointmentTable">
-                                <table class="table table-bordered table-hover" style="margin-bottom: 4%" id="appTableBody">
-                                    <thead>
-                                        <tr>
-                                            <th><center>No</center></th>
-                                            <th><center>Appointment Date</center></th>
-                                            <th><center>Appointment Time</center></th>
-                                            <th><center>Doctor Name</center></th>
-                                            <th><center>Discipline</center></th>
-                                            <th><center>Subdicipline</center></th>
-                                            <th><center>Appointment Type</center></th>
-                                            <th><center>Action</center></th>
-                                            <th><center>Cancel Reason</center></th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                        <%
-                                            if (dataAppointment.size() > 0) 
-                                            {
-                                                for (int i = 0; i < dataAppointment.size(); i++) 
-                                                {
-                                                    Date today = new Date();
-                                                    String expectedPattern = "yyyy-MM-dd";
-                                                    SimpleDateFormat formatter = new SimpleDateFormat(expectedPattern);
-                                                    String appDateFromDB = dataAppointment.get(i).get(0);
-                                                    Date covertedAppDate = formatter.parse(appDateFromDB);
-                                                    //                                    String endLeaveDateFromDB = dataAppointment.get(i).get(1);
-                                                    //                                    Date endLeaveDate = formatter.parse(endLeaveDateFromDB);
+                            </div>
+                            <div id="clinicDayDirectory" class="tab-pane fade">
+                                <h3 class="headerTitle">Clinic Availability</h3>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-hover">
+                                        <thead>
+                                            <tr> 
+                                                <th><center>No</center></th>
+                                        <th><center>State</center></th>
+                                        <th><center>Health Facility Name</center></th>
+                                        <th><center>Discipline</center></th>
+                                        <th><center>Subdicipline</center></th>
+                                        <th><center>Clinic Day</center></th>
+                                        <th><center>Start Time</center></th>
+                                        <th><center>End Time</center></th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                            <%
+                                                if (dataClinicDay.size() > 0) {
+                                                    for (int i = 0; i < dataClinicDay.size(); i++) {%> 
+                                            <tr>
+                                                <td><center><%out.print(i + 1);%></center></td>
+                                        <td><left><%=dataClinicDay.get(i).get(8)%></left></td>
+                                        <td><left><%=dataClinicDay.get(i).get(9)%></left></td>
+                                        <td><left><%=dataClinicDay.get(i).get(10)%></left></td>
+                                        <td><left><%=dataClinicDay.get(i).get(11)%></left></td>
+                                        <td><left><%=dataClinicDay.get(i).get(2)%></left></td>
+                                        <td><center><%=dataClinicDay.get(i).get(5)%></center></td>
+                                        <td><center><%=dataClinicDay.get(i).get(6)%></center></td>
+                                        </tr>
+                                        <% }
+                                        }%>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div id="viewholiday" class="tab-pane fade">
+                                <h3 class="headerTitle">View Holiday</h3>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th><center>No</center></th>
+                                        <th><center>Date</center></th>
+                                        <th><center>Description</center></th>
+                                        <th><center>State Name</center></th>
+                                        <th><center>Applicable to</center></th>
+                                        <!--<th><center>Status</center></th>-->
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                            <%
+                                                if (data.size() > 0) {
+                                                    for (int i = 0; i < data.size(); i++) {
+                                                        Date today = new Date();
+                                                        String expectedPattern = "yyyy-MM-dd HH:mm:ss.SSS";
+                                                        SimpleDateFormat formatter = new SimpleDateFormat(expectedPattern);
+                                                        String dateFromDB = data.get(i).get(4);
+                                                        Date dateDB = formatter.parse(dateFromDB);
 
-                                                    SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy");
-                                                    String appointmentDate = DATE_FORMAT.format(covertedAppDate);
-                                                    //                                    String endLeave = DATE_FORMAT.format(endLeaveDate);
+                                                        SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy");
+                                                        String date = DATE_FORMAT.format(dateDB);
 
-                                                    //                                    String staffIDFromDB = dataStaffLeave.get(i).get(1);
+                                                        SimpleDateFormat df = new SimpleDateFormat("EEEE");
+                                                        String newDate = df.format(dateDB);
+                                                        //out.print(newDate);
 
                                             %>
                                             <tr>
-                                            <%  Date currentDate = new Date();
-                                                String todayDate = DATE_FORMAT.format(currentDate);
+                                                <td><center><% out.print(i + 1);%></center></td>
+                                        <td><center><%=date%></center></td>
+                                        <td><left><%=data.get(i).get(5)%></left></td>
+                                        <td><left><%=data.get(i).get(10)%></left></td>
+                                        <td><left><%=data.get(i).get(6)%></left></td> 
+                                        </tr>
+                                        <%
+                                                    if (dateDB.before(today)) {
+                                                        RMIConnector rmic = new RMIConnector();
+                                                        String sqlInsert = "UPDATE pms_holiday SET status='inactive' WHERE holiday_date < date(now());";
 
-                                                if ((covertedAppDate.after(currentDate) || appointmentDate.contentEquals(todayDate)) && dataAppointment.get(i).get(9).equals("active")) 
-                                                { %>
-                                                    <td class="incoming_date_area"><center><%out.print(i + 1);%></center></td>
-                                                    <td class="incoming_date_area"><center><%=appointmentDate%></center></td>
-                                                    <td class="incoming_date_area"><center><%=dataAppointment.get(i).get(1)%></center></td>
-                                                    <td class="incoming_date_area"><left><%=dataAppointment.get(i).get(4)%></left></td>
-                                                    <td class="incoming_date_area"><center><%=dataAppointment.get(i).get(5)%></center></td>
-                                                    <td class="incoming_date_area"><center><%=dataAppointment.get(i).get(6)%></center></td>
-                                                    <td class="incoming_date_area"><center><%=dataAppointment.get(i).get(7)%></center></td>
-                                                    <td class="incoming_date_area">
-                                                    <center>
-                                                    <button class="btn btn-xs btn-primary" onClick="return myFunction('<%=dataAppointment.get(i).get(2)%>','<%=hfc%>','<%=dataAppointment.get(i).get(0)%>')">Cancel</button>
-                                                        
-                                                        <script type="text/javascript">
-                                                        
-                                                            function myFunction(_pmiNo,_hfcCode,_date)
-                                                            {
-
-                                                                var data = {
-                                                                    pmiNo:_pmiNo,
-                                                                    hfcCode:_hfcCode,
-                                                                    date:_date
-                                                                };
-                                                                
-                                                                function ajaxPost(data)
-                                                                {
-                                                                    $.ajax({
-                                                                        url:"patientCancelAppointmentAjax.jsp",
-                                                                        type:"post",
-                                                                        data:data,
-                                                                        timeout:10000,
-                                                                        success: function(result){
-                                                                            var status = result;
-                                                                            status = status.replace(";","");
-                                                                            status = status.trim();
-                                                                            
-                                                                            if (status == "canceled"){
-                                                                                alert("You appointment has been canceled");
-                                                                                $("#appointmentTable").load("patientAppointmentAjax.jsp #appointmentTable" );
-                                                                            }
-                                                                            else
-                                                                            {
-                                                                                alert("Have Some Error");
-                                                                            }
-                                                                        },
-                                                                        error: function(err){
-                                                                            console.log(err);
-                                                                        }
-                                                                    });
-                                                                }
-                                                                var result = confirm("Are you sure to cancel your appointment. This action is unreturnable");
-                                                                if(result == true)
-                                                                {
-                                                                    ajaxPost(data);
-                                                                    console.log(data);
-                                                                }
-                                                                else
-                                                                {
-                                                                    return false;
-                                                                }
-                                                            }
-                                                        </script>
-                                                    </center>
-                                                    </td>
-                                                    <td class="incoming_date_area"><center></center></td>
-                                                <%
-                                                } 
-                                                else if ((covertedAppDate.after(currentDate) || appointmentDate.contentEquals(todayDate)) && dataAppointment.get(i).get(9).equals("canceled")) 
-                                                {%>
-                                                    <td style="background-color : yellow"><center><%out.print(i + 1);%></center></td>
-                                                    <td><center><%=appointmentDate%></center></td>
-                                                    <td><center><%=dataAppointment.get(i).get(1)%></center></td>
-                                                    <td><left><%=dataAppointment.get(i).get(4)%></left></td>
-                                                    <td><center><%=dataAppointment.get(i).get(5)%></center></td>
-                                                    <td><center><%=dataAppointment.get(i).get(6)%></center></td>
-                                                    <td><center><%=dataAppointment.get(i).get(7)%></center></td>
-                                                    <!--<td><center><%=dataAppointment.get(i).get(9)%></center></td>-->
-                                                    <td>
-                                                    <center>
-                                                        <button disabled="disabled" class="btn btn-xs btn-primary" onClick="location.href = 'patientCancelAppointment.jsp?e27=<%=dataAppointment.get(i).get(2)%>&e48=<%=hfc%>&e32=<%=dataAppointment.get(i).get(0)%>'">Cancel</button>
-                                                    </center>
-                                                    </td>
-                                                    <td><center><%=dataAppointment.get(i).get(10)%></center></td>
-                                                <%
-                                                } else 
-                                                {
-                                                %>
-                                                    <td style="background-color:red"><center><%out.print(i + 1);%></center></td>
-                                                    <td><center><%=appointmentDate%></center></td>
-                                                    <td><center><%=dataAppointment.get(i).get(1)%></center></td> 
-                                                    <td><left><%=dataAppointment.get(i).get(4)%></left></td>
-                                                    <td><center><%=dataAppointment.get(i).get(5)%></center></td>
-                                                    <td><center><%=dataAppointment.get(i).get(6)%></center></td>
-                                                    <td><center><%=dataAppointment.get(i).get(7)%></center></td>
-                                                    <!--<td><center><%=dataAppointment.get(i).get(9)%></center></td>-->
-                                                    <td>
-                                                    <center>
-                                                        <button disabled="disabled" class="btn btn-xs btn-primary" onClick="location.href = 'patientCancelAppointment.jsp?e27=<%=dataAppointment.get(i).get(2)%>&e48=<%=hfc%>&e32=<%=dataAppointment.get(i).get(0)%>'">Cancel</button>
-                                                    </center>
-                                                    </td>
-                                                    <td><center>Not Applicable</center></td>
-                                                 <%
+                                                        boolean isInsert = rmic.setQuerySQL(Conn.HOST, Conn.PORT, sqlInsert);
                                                     }
-                                                 %>
+                                                }
+                                            }%>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div id="applyAppointment" class="tab-pane fade">
+                                <h3 class="headerTitle">Make Appointment</h3>
+                                <p style="color: red; margin-bottom: 2%"> *** Please make sure that you have check the availability and also view the holiday before make an appointment</p>
 
-                                            </tr>
-                                                <%
-                                                if(covertedAppDate.before(today))
-                                                {      
-                                                    RMIConnector rmic = new RMIConnector();
-                                                    String sqlInsert = "UPDATE pms_appointment SET status='inactive' WHERE appointment_date < date(now());";
+                                <p><b>PMI No : </b><% out.print(pmi);%> </p>
+                                <p><b>ID No : </b><% out.print(idPatient); %></p>
+                                <p><b>Patient Name : </b><% out.print(patientName);%></p>
+                                <input type="hidden" name="pmiNo" value="<%=pmi%>" id="pmiNo">
+                                <input type="hidden" name="idNo" value="<%=idPatient%>" id="idNo">
+                                <input type="hidden" name="patientName" value="<%=patientName%>" id="patientName">
+                                <input type="hidden" name="HFCCode" value="<%=hfc%>" id="HFCCode">
+                                <input type="hidden" name="ic" value="<%=ic%>" id="ic">
+                                <input type="hidden" name="role" value="<%=title%>" id="role">
 
-                                                    boolean isInsert = rmic.setQuerySQL(Conn.HOST, Conn.PORT, sqlInsert);
+
+                                <%
+                                    //String pmi= request.getParameter("dateAppointmentBefore");
+                                    session.setAttribute("pmiToBeUsed", pmi);
+                                    session.setAttribute("idPatientToBeUsed", idPatient);
+                                    session.setAttribute("patientNameToBeUsed", patientName);
+                                %>
+                                <form class="form-horizontal">
+                                    <%
+                                        String sql = "SELECT * "
+                                                + "FROM pms_patient_biodata "
+                                                + "WHERE PMI_NO='" + e27 + "' OR NEW_IC_NO = '" + e28 + "' OR ID_TYPE = '" + e29 + "' OR ID_NO = '" + e30 + "'";
+                                        ArrayList<ArrayList<String>> dataPatient = Conn.getData(sql);
+
+                                        String sqlPatientApp = "SELECT * "
+                                                + "FROM pms_appointment";
+                                        ArrayList<ArrayList<String>> dataPatientApp = Conn.getData(sqlPatientApp);
+
+                                    %>
+                                    <div class="row">
+                                        <div class="col-md-8 col-md-offset-2 col-sm-12 col-xs-12" style="background-color: #f2f2f2; padding-top: 2%; padding-bottom: 1%; margin-bottom: 1%">
+                                            <div class="form-group">
+                                                <label class="control-label col-sm-2" for="disApp">Discipline : </label>  
+                                                <div class="col-sm-10">   
+                                                    <input  name="disApp" type="text" value="Outpatient Discipline"  id="disciple" class="form-control" readonly>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-sm-2" for="subDisApp">Subdicipline : </label>  
+                                                <div class="col-sm-10">   
+                                                    <input  name="subDisApp" type="text"  value="General Medicine" id="subdisciplineAppointment" class="form-control" readonly>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-sm-2" for="appD">*Doctor : </label>  
+                                                <div class="col-sm-10">   
+                                                    <select class="form-control" id="doctorApp" name="appDoc" required>
+                                                        <option></option>
+                                                        <%                                                        String sqlDoc = "SELECT USER_ID,USER_NAME "
+                                                                    + "FROM adm_users "
+                                                                    + "WHERE HEALTH_FACILITY_CODE = '" + hfc + "' AND OCCUPATION_CODE = '002'";
+                                                            ArrayList<ArrayList<String>> dataDoctor = Conn.getData(sqlDoc);
+
+                                                            if (e34 == null) {
+                                                                if (dataDoctor.size() > 0) {
+                                                                    for (int i = 0; i < dataDoctor.size(); i++) {%>
+                                                        <option value="<%=dataDoctor.get(i).get(0)%>"><%=dataDoctor.get(i).get(1)%></option>
+                                                        <% }
+                                                            }
+                                                        } else {
+                                                            for (int i = 0; i < dataDoctor.size(); i++) {
+                                                                if (e34.equals(dataDoctor.get(i).get(0))) {%>
+                                                        <option value="<%= e34%>" selected><%=dataDoctor.get(i).get(3)%></option>
+                                                        <%} else {%>
+                                                        <option value="<%= dataDoctor.get(i).get(0)%>"><%=dataDoctor.get(i).get(1)%></option> <%
+                                                                    }
+                                                                }
+
+                                                            }%>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-sm-2" for="appDate">*Appointment Date : </label>  
+                                                <div class="col-sm-10">   
+                                                    <%if (e32 == null) {%>
+                                                    <input  name="appDate" type="text" id="datepicker"  class="form-control" required>
+                                                    <%} else {%>
+                                                    <input name="appDate" value="<%= e32%>" type="date" id="datepicker" class="form-control" required>
+                                                    <%}%>
+                                                </div>
+                                            </div>
+                                            <script>
+                                                var today = new Date().toISOString().split('T')[0];
+                                                document.getElementsByName("appDate")[0].setAttribute('min', today);
+                                            </script>
+                                            <div class="form-group">
+                                                <label class="control-label col-sm-2" for="appTime">*Appointment Time : </label>  
+                                                <div class="col-sm-10">   
+                                                    <select class="form-control" id="timepicker" name="appTime" required>
+                                                        <option></option>
+                                                        <%if (e33 == null) {%>
+                                                        <option value="09:00:00"><%out.print("09:00:00");%></option>
+                                                        <option value="09:15:00"><%out.print("09:15:00");%></option>
+                                                        <option value="09:30:00"><%out.print("09:30:00");%></option>
+                                                        <option value="09:45:00"><%out.print("09:45:00");%></option>
+                                                        <option value="10:00:00"><%out.print("10:00:00");%></option>
+                                                        <option value="10:15:00"><%out.print("10:15:00");%></option>
+                                                        <option value="10:30:00"><%out.print("10:30:00");%></option>
+                                                        <option value="10:35:00"><%out.print("10:35:00");%></option>
+                                                        <option value="10:40:00"><%out.print("10:40:00");%></option>
+                                                        <option value="10:45:00"><%out.print("10:45:00");%></option>
+                                                        <option value="11:00:00"><%out.print("11:00:00");%></option>
+                                                        <option value="11:15:00"><%out.print("11:15:00");%></option>
+                                                        <option value="11:30:00"><%out.print("11:30:00");%></option>
+                                                        <option value="11:45:00"><%out.print("11:45:00");%></option>
+                                                        <option value="12:00:00"><%out.print("12:00:00");%></option>
+                                                        <option value="12:15:00"><%out.print("12:15:00");%></option>
+                                                        <option value="12:30:00"><%out.print("12:30:00");%></option>
+                                                        <option value="12:45:00"><%out.print("12:45:00");%></option>
+                                                        <option value="13:00:00"><%out.print("13:00:00");%></option>
+                                                        <option value="13:15:00"><%out.print("13:15:00");%></option>
+                                                        <option value="13:30:00"><%out.print("13:30:00");%></option>
+                                                        <option value="13:45:00"><%out.print("13:45:00");%></option>
+                                                        <option value="14:00:00"><%out.print("14:00:00");%></option>
+                                                        <option value="14:15:00"><%out.print("14:15:00");%></option>
+                                                        <option value="14:30:00"><%out.print("14:30:00");%></option>
+                                                        <option value="14:45:00"><%out.print("14:45:00");%></option>
+                                                        <option value="15:00:00"><%out.print("15:00:00");%></option>
+                                                        <option value="15:15:00"><%out.print("15:15:00");%></option>
+                                                        <option value="15:30:00"><%out.print("15:30:00");%></option>
+                                                        <option value="15:45:00"><%out.print("15:45:00");%></option>
+                                                        <option value="16:00:00"><%out.print("16:00:00");%></option>
+                                                        <option value="16:15:00"><%out.print("16:15:00");%></option>
+                                                        <option value="16:30:00"><%out.print("16:30:00");%></option>
+                                                        <%} else {%>
+                                                        <option value="09:00:00"><%out.print("09:00:00");%></option>
+                                                        <option value="09:15:00"><%out.print("09:15:00");%></option>
+                                                        <option value="09:30:00"><%out.print("09:30:00");%></option>
+                                                        <option value="09:45:00"><%out.print("09:45:00");%></option>
+                                                        <option value="10:00:00"><%out.print("10:00:00");%></option>
+                                                        <option value="10:15:00"><%out.print("10:15:00");%></option>
+                                                        <option value="10:30:00"><%out.print("10:30:00");%></option>
+                                                        <option value="10:35:00"><%out.print("10:35:00");%></option>
+                                                        <option value="10:40:00"><%out.print("10:40:00");%></option>
+                                                        <option value="10:45:00"><%out.print("10:45:00");%></option>
+                                                        <option value="11:00:00"><%out.print("11:00:00");%></option>
+                                                        <option value="11:15:00"><%out.print("11:15:00");%></option>
+                                                        <option value="11:30:00"><%out.print("11:30:00");%></option>
+                                                        <option value="11:45:00"><%out.print("11:45:00");%></option>
+                                                        <option value="12:00:00"><%out.print("12:00:00");%></option>
+                                                        <option value="12:15:00"><%out.print("12:15:00");%></option>
+                                                        <option value="12:30:00"><%out.print("12:30:00");%></option>
+                                                        <option value="12:45:00"><%out.print("12:45:00");%></option>
+                                                        <option value="13:00:00"><%out.print("13:00:00");%></option>
+                                                        <option value="13:15:00"><%out.print("13:15:00");%></option>
+                                                        <option value="13:30:00"><%out.print("13:30:00");%></option>
+                                                        <option value="13:45:00"><%out.print("13:45:00");%></option>
+                                                        <option value="14:00:00"><%out.print("14:00:00");%></option>
+                                                        <option value="14:15:00"><%out.print("14:15:00");%></option>
+                                                        <option value="14:30:00"><%out.print("14:30:00");%></option>
+                                                        <option value="14:45:00"><%out.print("14:45:00");%></option>
+                                                        <option value="15:00:00"><%out.print("15:00:00");%></option>
+                                                        <option value="15:15:00"><%out.print("15:15:00");%></option>
+                                                        <option value="15:30:00"><%out.print("15:30:00");%></option>
+                                                        <option value="15:45:00"><%out.print("15:45:00");%></option>
+                                                        <option value="16:00:00"><%out.print("16:00:00");%></option>
+                                                        <option value="16:15:00"><%out.print("16:15:00");%></option>
+                                                        <option value="16:30:00"><%out.print("16:30:00");%></option>
+                                                        <%} %>
+                                                    </select>
+                                                </div>
+                                            </div> 
+                                            <div class="form-group">
+                                                <label class="control-label col-sm-2" for="appType">*Appointment Type : </label>  
+                                                <div class="col-sm-10">   
+                                                    <select class="form-control" id="typeAppointment" name="appType" required>
+                                                        <option></option>
+                                                        <%
+                                                            String sqlAppType = "SELECT * FROM lookup_detail "
+                                                                    + "WHERE Master_Ref_code = '0086' ";
+                                                            ArrayList<ArrayList<String>> dataAppType = Conn.getData(sqlAppType);
+
+                                                            if (e48 == null) {
+                                                                if (dataAppType.size() > 0) {
+                                                                    for (int i = 0; i < dataAppType.size(); i++) {%>
+                                                        <option value="<%=dataAppType.get(i).get(2)%>"><%=dataAppType.get(i).get(2)%></option>
+                                                        <% }
+                                                                }
+                                                            } else {
+                                                            }%>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-8 col-md-offset-2 col-sm-12 col-xs-12">
+                                            <button class="btn btn-xs btn-success"  value="Check" style="margin-bottom: 6%" id="check">Check</button>
+                                            <button class="btn btn-xs btn-success" type="reset" value="Reset" style="margin-bottom: 6%">Reset</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                            <div id="viewAppointment" class="tab-pane fade">
+                                <h3 class="headerTitle">View Appointment</h3>
+                                <p><b>PMI No : </b><% out.print(pmi);%> </p>
+                                <p><b>ID No : </b><% out.print(idPatient); %></p>
+                                <p><b>Patient Name : </b><% out.print(patientName); %></p>
+
+                                <p><b>Date From : </b><input type="text" name="dateFrom" value="" id="dateFrom" required></p>
+                                <p><b>Date To : </b><input type="text"  name="dateTo" value="" id="dateTo" required>
+                                    <!--                                    <button class="btn btn-xs btn-success" type="submit" value="Check Your Date" formaction="patientAppointmentSelectDate.jsp">Check Your Date</button></p>-->
+                                    <button class="btn btn-xs btn-success" value="Check Your Date" id="checkDate">Check Your Date</button></p>
+
+                                <table class="table table-bordered table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th style="background-color : yellow;"></th>
+                                            <th>Canceled Appointment</th>
+                                            <th style="background-color : #8cff66;"></th>
+                                            <th>Upcoming Appointment</th>
+                                            <th style="background-color : red;"></th>
+                                            <th>Past Appointment</th>
+                                        </tr>
+                                    </thead>
+                                </table>
+                                <div class="table-responsive" id="appointmentTable">
+                                    <table class="table table-bordered table-hover" style="margin-bottom: 4%" id="appTableBody">
+                                        <thead>
+                                            <tr>
+                                                <th><center>No</center></th>
+                                        <th><center>Appointment Date</center></th>
+                                        <th><center>Appointment Time</center></th>
+                                        <th><center>Doctor Name</center></th>
+                                        <th><center>Discipline</center></th>
+                                        <th><center>Subdicipline</center></th>
+                                        <th><center>Appointment Type</center></th>
+                                        <th><center>Action</center></th>
+                                        <th><center>Cancel Reason</center></th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                            <%
+                                                if (dataAppointment.size() > 0) {
+                                                    for (int i = 0; i < dataAppointment.size(); i++) {
+                                                        Date today = new Date();
+                                                        String expectedPattern = "yyyy-MM-dd";
+                                                        SimpleDateFormat formatter = new SimpleDateFormat(expectedPattern);
+                                                        String appDateFromDB = dataAppointment.get(i).get(0);
+                                                        Date covertedAppDate = formatter.parse(appDateFromDB);
+                                                        //                                    String endLeaveDateFromDB = dataAppointment.get(i).get(1);
+                                                        //                                    Date endLeaveDate = formatter.parse(endLeaveDateFromDB);
+
+                                                        SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy");
+                                                        String appointmentDate = DATE_FORMAT.format(covertedAppDate);
+                                                        //                                    String endLeave = DATE_FORMAT.format(endLeaveDate);
+
+                                                        //                                    String staffIDFromDB = dataStaffLeave.get(i).get(1);
+
+                                            %>
+                                            <tr>
+                                                <%  Date currentDate = new Date();
+                                                    String todayDate = DATE_FORMAT.format(currentDate);
+
+                                                    if ((covertedAppDate.after(currentDate) || appointmentDate.contentEquals(todayDate)) && dataAppointment.get(i).get(9).equals("active")) { %>
+                                                <td class="incoming_date_area"><center><%out.print(i + 1);%></center></td>
+                                        <td class="incoming_date_area"><center><%=appointmentDate%></center></td>
+                                        <td class="incoming_date_area"><center><%=dataAppointment.get(i).get(1)%></center></td>
+                                        <td class="incoming_date_area"><left><%=dataAppointment.get(i).get(4)%></left></td>
+                                        <td class="incoming_date_area"><center><%=dataAppointment.get(i).get(5)%></center></td>
+                                        <td class="incoming_date_area"><center><%=dataAppointment.get(i).get(6)%></center></td>
+                                        <td class="incoming_date_area"><center><%=dataAppointment.get(i).get(7)%></center></td>
+                                        <td class="incoming_date_area">
+                                        <center>
+                                            <button class="btn btn-xs btn-primary" onClick="return myFunction('<%=dataAppointment.get(i).get(2)%>', '<%=hfc%>', '<%=dataAppointment.get(i).get(0)%>')">Cancel</button>
+
+                                            <script type="text/javascript">
+
+                                                function myFunction(_pmiNo, _hfcCode, _date)
+                                                {
+
+                                                    var data = {
+                                                        pmiNo: _pmiNo,
+                                                        hfcCode: _hfcCode,
+                                                        date: _date
+                                                    };
+
+                                                    function ajaxPost(data)
+                                                    {
+                                                        $.ajax({
+                                                            url: "patientCancelAppointmentAjax.jsp",
+                                                            type: "post",
+                                                            data: data,
+                                                            timeout: 10000,
+                                                            success: function (result) {
+                                                                var status = result;
+                                                                status = status.replace(";", "");
+                                                                status = status.trim();
+
+                                                                if (status == "canceled") {
+                                                                    alert("You appointment has been canceled");
+                                                                    $("#appointmentTable").load("patientAppointmentAjax.jsp #appointmentTable");
+                                                                } else
+                                                                {
+                                                                    alert("Have Some Error");
+                                                                }
+                                                            },
+                                                            error: function (err) {
+                                                                console.log(err);
+                                                            }
+                                                        });
+                                                    }
+                                                    var result = confirm("Are you sure to cancel your appointment. This action is unreturnable");
+                                                    if (result == true)
+                                                    {
+                                                        ajaxPost(data);
+                                                        console.log(data);
+                                                    } else
+                                                    {
+                                                        return false;
+                                                    }
+                                                }
+                                            </script>
+                                        </center>
+                                        </td>
+                                        <td class="incoming_date_area"><center></center></td>
+                                            <%
+                                        } else if ((covertedAppDate.after(currentDate) || appointmentDate.contentEquals(todayDate)) && dataAppointment.get(i).get(9).equals("canceled")) {%>
+                                        <td style="background-color : yellow"><center><%out.print(i + 1);%></center></td>
+                                        <td><center><%=appointmentDate%></center></td>
+                                        <td><center><%=dataAppointment.get(i).get(1)%></center></td>
+                                        <td><left><%=dataAppointment.get(i).get(4)%></left></td>
+                                        <td><center><%=dataAppointment.get(i).get(5)%></center></td>
+                                        <td><center><%=dataAppointment.get(i).get(6)%></center></td>
+                                        <td><center><%=dataAppointment.get(i).get(7)%></center></td>
+                                        <!--<td><center><%=dataAppointment.get(i).get(9)%></center></td>-->
+                                        <td>
+                                        <center>
+                                            <button disabled="disabled" class="btn btn-xs btn-primary" onClick="location.href = 'patientCancelAppointment.jsp?e27=<%=dataAppointment.get(i).get(2)%>&e48=<%=hfc%>&e32=<%=dataAppointment.get(i).get(0)%>'">Cancel</button>
+                                        </center>
+                                        </td>
+                                        <td><center><%=dataAppointment.get(i).get(10)%></center></td>
+                                            <%
+                                            } else {
+                                            %>
+                                        <td style="background-color:red"><center><%out.print(i + 1);%></center></td>
+                                        <td><center><%=appointmentDate%></center></td>
+                                        <td><center><%=dataAppointment.get(i).get(1)%></center></td> 
+                                        <td><left><%=dataAppointment.get(i).get(4)%></left></td>
+                                        <td><center><%=dataAppointment.get(i).get(5)%></center></td>
+                                        <td><center><%=dataAppointment.get(i).get(6)%></center></td>
+                                        <td><center><%=dataAppointment.get(i).get(7)%></center></td>
+                                        <!--<td><center><%=dataAppointment.get(i).get(9)%></center></td>-->
+                                        <td>
+                                        <center>
+                                            <button disabled="disabled" class="btn btn-xs btn-primary" onClick="location.href = 'patientCancelAppointment.jsp?e27=<%=dataAppointment.get(i).get(2)%>&e48=<%=hfc%>&e32=<%=dataAppointment.get(i).get(0)%>'">Cancel</button>
+                                        </center>
+                                        </td>
+                                        <td><center>Not Applicable</center></td>
+                                            <%
+                                                }
+                                            %>
+
+                                        </tr>
+                                        <%
+                                                    if (covertedAppDate.before(today)) {
+                                                        RMIConnector rmic = new RMIConnector();
+                                                        String sqlInsert = "UPDATE pms_appointment SET status='inactive' WHERE appointment_date < date(now());";
+
+                                                        boolean isInsert = rmic.setQuerySQL(Conn.HOST, Conn.PORT, sqlInsert);
+                                                    }
                                                 }
                                             }
-                                        }
-                                    %>
-                                    </tbody>
-                                </table>
+                                        %>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>             
-            </div>
-                                    
-            <div class="row">
-                <div class="col-md-12 col-sm-12 col-xs-12 footer " >
-                    Copyright &copy; BIOCORE 2016
+                    </div>             
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12 col-sm-12 col-xs-12 footer " >
+                        Copyright &copy; BIOCORE 2016
+                    </div>
                 </div>
             </div>
+
         </div>
-                                    
-       <script src="<%=Config.getBase_url(request) %>jsfile/MakeAppointment.js"></script> 
+
+
+
+
+
+        <script src="<%=Config.getBase_url(request)%>jsfile/MakeAppointment.js"></script> 
         <script src="<%=Config.getBase_url(request)%>jsfile/DoctorAvaibility.js"></script>
-      <script type="text/javascript">
-        $(document).ready(function(){
-            
-            $(function(){
-                $('#datepicker').datepicker({dateFormat:'dd/mm/yy'});
-            });
-            $(function(){
-                $('#dateDoctorA').datepicker({dateFormat:'dd/mm/yy'});
-            });
-          $(function(){
-                $('#dateFrom').datepicker({dateFormat:'dd/mm/yy'});
-            });
-          $(function(){
-                $('#dateTo').datepicker({dateFormat:'dd/mm/yy'});
-            });
-            
-            function searchAppFromTo(dfrom,dto)
-            {
-                var df = dfrom.split("/");
-                var dt = dto.split("/");
-                var from = new Date(dfrom);  
-                var to   = new Date(dto);
+        <script type="text/javascript">
+                                                $(document).ready(function () {
 
-                console.log("From date : "+from);
-               console.log("To date : "+to);
+                                                    $(function () {
+                                                        $('#datepicker').datepicker({dateFormat: 'dd/mm/yy'});
+                                                    });
+                                                    $(function () {
+                                                        $('#dateDoctorA').datepicker({dateFormat: 'dd/mm/yy'});
+                                                    });
+                                                    $(function () {
+                                                        $('#dateFrom').datepicker({dateFormat: 'dd/mm/yy'});
+                                                    });
+                                                    $(function () {
+                                                        $('#dateTo').datepicker({dateFormat: 'dd/mm/yy'});
+                                                    });
 
-                var targetTable = document.getElementById('appTableBody');
-                //console.log(targetTable.rows.length);
-                var targetTableColCount;
-                
-                for (var rowIndex = 0; rowIndex < targetTable.rows.length; rowIndex++) {
-                    var rowData = [];
-                    if (rowIndex === 0) {
-                        targetTableColCount = targetTable.rows.item(rowIndex).cells.length;
-                        //console.log("Num of Column : " + targetTableColCount);
-                        continue; 
-                    }
+                                                    function searchAppFromTo(dfrom, dto)
+                                                    {
+                                                        var df = dfrom.split("/");
+                                                        var dt = dto.split("/");
+                                                        var from = new Date(dfrom);
+                                                        var to = new Date(dto);
 
-                    for (var colIndex = 0; colIndex < targetTableColCount; colIndex++) {
-                        rowData.push(targetTable.rows.item(rowIndex).cells.item(colIndex).textContent);
-                        
-                    }
-                    //console.log(rowData[1]);
-                    var dateSplit = rowData[1].split("/");
-                    //console.log(dateSplit);
-                    var check = new Date(dateSplit[2],dateSplit[1]-1,dateSplit[0]);
-                    
-                    if ((check >= from) && (check <= to)){
-                        targetTable.rows.item(rowIndex).style.display = 'table-row';
-                        //console.log(rowIndex);
-                    }
-                    else{
-                        targetTable.rows.item(rowIndex).style.display = 'none'; 
-                        
-                    }
-                }
-            }
-            
-            function emptyField(){
-                $("#doctorApp").val("");
-                $("#datepicker").val("");
-                $("#timepicker").val("");
-                $("#typeAppointment").val("");
-            }
-            
-  
-          
+                                                        console.log("From date : " + from);
+                                                        console.log("To date : " + to);
 
-          $('#viewApp').click(function(e){
-              $("#appointmentTable").load("patientAppointmentAjax.jsp #appointmentTable" );
-          });
-          $("#checkDate").click(function(e){
-              
-              e.preventDefault();
-             
-            var _dateFrom = $("#dateFrom").datepicker().val();
-            var _dateTo = $("#dateTo").datepicker().val();
-            _dateFrom  = _dateFrom.split('/');
-            _dateFrom = _dateFrom[1]+"/"+_dateFrom[0]+"/"+_dateFrom[2];
-           _dateTo  = _dateTo.split('/');
-            _dateTo = _dateTo[1]+"/"+_dateTo[0]+"/"+_dateTo[2];
-            console.log(_dateFrom);
-            console.log(_dateTo);
-            searchAppFromTo(_dateFrom,_dateTo);
+                                                        var targetTable = document.getElementById('appTableBody');
+                                                        //console.log(targetTable.rows.length);
+                                                        var targetTableColCount;
 
-          });
-              
-          
-        });
-        
+                                                        for (var rowIndex = 0; rowIndex < targetTable.rows.length; rowIndex++) {
+                                                            var rowData = [];
+                                                            if (rowIndex === 0) {
+                                                                targetTableColCount = targetTable.rows.item(rowIndex).cells.length;
+                                                                //console.log("Num of Column : " + targetTableColCount);
+                                                                continue;
+                                                            }
+
+                                                            for (var colIndex = 0; colIndex < targetTableColCount; colIndex++) {
+                                                                rowData.push(targetTable.rows.item(rowIndex).cells.item(colIndex).textContent);
+
+                                                            }
+                                                            //console.log(rowData[1]);
+                                                            var dateSplit = rowData[1].split("/");
+                                                            //console.log(dateSplit);
+                                                            var check = new Date(dateSplit[2], dateSplit[1] - 1, dateSplit[0]);
+
+                                                            if ((check >= from) && (check <= to)) {
+                                                                targetTable.rows.item(rowIndex).style.display = 'table-row';
+                                                                //console.log(rowIndex);
+                                                            } else {
+                                                                targetTable.rows.item(rowIndex).style.display = 'none';
+
+                                                            }
+                                                        }
+                                                    }
+
+                                                    function emptyField() {
+                                                        $("#doctorApp").val("");
+                                                        $("#datepicker").val("");
+                                                        $("#timepicker").val("");
+                                                        $("#typeAppointment").val("");
+                                                    }
+
+
+
+
+                                                    $('#viewApp').click(function (e) {
+                                                        $("#appointmentTable").load("patientAppointmentAjax.jsp #appointmentTable");
+                                                    });
+                                                    $("#checkDate").click(function (e) {
+
+                                                        e.preventDefault();
+
+                                                        var _dateFrom = $("#dateFrom").datepicker().val();
+                                                        var _dateTo = $("#dateTo").datepicker().val();
+                                                        _dateFrom = _dateFrom.split('/');
+                                                        _dateFrom = _dateFrom[1] + "/" + _dateFrom[0] + "/" + _dateFrom[2];
+                                                        _dateTo = _dateTo.split('/');
+                                                        _dateTo = _dateTo[1] + "/" + _dateTo[0] + "/" + _dateTo[2];
+                                                        console.log(_dateFrom);
+                                                        console.log(_dateTo);
+                                                        searchAppFromTo(_dateFrom, _dateTo);
+
+                                                    });
+
+
+                                                });
+
         </script>
     </body>
 </html>
