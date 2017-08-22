@@ -9,9 +9,18 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>JSP Page</title>
+         
+        <title>Appointment Calendar</title>
     </head>
     <body>
-        <h1>Hello World!</h1>
+        
+ 
+
+        <div id="AppointmentCalender">
+        </div>
+        <jsp:include page="AppointmentAdd.jsp"/>
+        
     </body>
+    
+     <jsp:include page="footerCalender.jsp"/>
 </html>

@@ -4,7 +4,7 @@
         <title>e-Appointment</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-
+        <link rel='stylesheet' href='calender/fullcalendar/fullcalendar.css' />
         <script src="<%=Config.getBase_url(request) %>bootstrap-3.3.6-dist/js/jquery.min.js"></script>
         <script src="<%=Config.getBase_url(request) %>bootstrap-3.3.6-dist/js/bootstrap.min.js"></script>
         <link href="<%=Config.getBase_url(request) %>authenticate.css" rel="stylesheet" type="text/css" />
@@ -22,6 +22,12 @@
         <script src="<%=Config.getBase_url(request) %>js/onKeyPress.js"></script>
         <script src="<%=Config.getBase_url(request) %>js/allowAlphabet.js"></script>
  
+        
+
+        <script src='calender/fullcalendar/lib/moment.min.js'></script>
+        <script src='calender/fullcalendar/fullcalendar.js'></script>
+
+
         
         
         

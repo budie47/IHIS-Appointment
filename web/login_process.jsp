@@ -20,10 +20,8 @@
     ArrayList<ArrayList<String>> dataPatient = Conn.getData(sql1);
     
 //    out.print(sql1); if (true) { return; };
- 
-    String sql2 = "SELECT adUsers.* "
-            + "FROM adm_users adUsers "                                              
-            + "WHERE adUsers.USER_ID= '" + username + "'";
+                //             0                1               2           3           4               5           
+    String sql2 = "SELECT `USER_ID`,`HEALTH_FACILITY_CODE`,`USER_NAME`,`PASSWORD`,`OCCUPATION_CODE`,`PICTURE` FROM adm_users WHERE USER_ID= '" + username + "'";
     ArrayList<ArrayList<String>> dataStaff = Conn.getData(sql2);
 
     
@@ -59,6 +57,12 @@
         
     }    else if (dataStaff.size() > 0) // login Staff (admin, nurse, doctor)
         {
+            String getDISSUB = "select `DISCIPLINE_CODE`,`SUBDISCIPLINE_CODE` from adm_user_access_role WHERE `USER_ID` = '" + username + "'";
+            ArrayList<ArrayList<String>> datagetDISSUB = Conn.getData(getDISSUB);
+            String disCode = null;
+            String subCode = null;
+            disCode = datagetDISSUB.get(0).get(0);
+            subCode = datagetDISSUB.get(0).get(1);
             for (int i = 0; i < dataStaff.size(); i++) {
                 if (dataStaff.get(i).get(4).equals("002")) //doctor
                 {
@@ -70,7 +74,11 @@
                         session.setAttribute("USER_NAME", name);
                         String title = dataStaff.get(0).get(4);
                         session.setAttribute("OCCUPATION_CODE", title);
+                        session.setAttribute("DISCIPLINE_CODE", disCode);
+                        session.setAttribute("SUBDISCIPLINE_CODE", subCode);
                         response.sendRedirect("medicalStaffDoctorAjax.jsp");
+                        
+ 
                     } else {
 
                 %><script language='javascript'>
@@ -87,7 +95,9 @@
                         session.setAttribute("OCCUPATION_CODE", title);
                         String name = dataStaff.get(0).get(2);
                         session.setAttribute("USER_NAME", name);
-
+                        session.setAttribute("DISCIPLINE_CODE", disCode);
+                        session.setAttribute("SUBDISCIPLINE_CODE", subCode);
+                        session.setAttribute("PICTURE", dataStaff.get(i).get(5));
                         //                session.setAttribute("newSession", "success");
                         response.sendRedirect("adminAppointmentAjax.jsp");
 

@@ -11,19 +11,7 @@ $(document).ready(function () {
                 $('#datepicker').datepicker({dateFormat:'dd/mm/yy'});
             });
     //function for add appointment
-    function terusInsert(data) {
-        $.ajax({
-            url: "patientInsertAppointmentAjax.jsp",
-            type: "post",
-            data: data,
-            timeout: 10000,
-            success: function (result) {
-                //console.log(result);
-                alert("Your Appointment is success added");
-                emptyField();
-            }
-        });
-    }
+
     ;
 
     //function for check appointment

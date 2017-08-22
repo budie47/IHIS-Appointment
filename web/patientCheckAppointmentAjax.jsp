@@ -15,6 +15,20 @@
         <%
            
                 Conn Conn = new Conn();
+//                                String pmiNo = "9504050251851";
+//                                    String dataUserId = "D031310012";
+//                                    String ic = "950405025185";
+//                                    String hfc = "04010101";
+//                                    //String discipline = request.getParameter("discipline");
+//                                    //String subdiscipline = request.getParameter("subdiscipline");
+//                                    String doctor = "02472";
+//                                    String dateAppointment = "2017-08-2017";
+//                                    String timeAppointment = "10:40:00";
+//                                    String datetimeAppoinment = dateAppointment + " " + timeAppointment;
+//                                    String typeAppointment = "Referral";
+
+
+                
                 String pmiNo = request.getParameter("pmiNo");
                 String dataUserId = request.getParameter("dataUserId");
                 String ic = request.getParameter("ic");
@@ -25,11 +39,11 @@
                 String timeAppointment = request.getParameter("timeAppointment");
                 String datetimeAppoinment = dateAppointment + " " + timeAppointment;
                 String typeAppointment = request.getParameter("typeAppointment");
-                //String hfcCode = request.getParameter("HfcCode");
-                
-                
-                String hfcCode;
                 String hfc = request.getParameter("HfcCode");
+                
+                
+                
+                
                 //out.print(hfc);
                 
                 String discipline;
@@ -72,20 +86,7 @@
 //                out.print("HFC Session : " + hfc+"\n");
 ////                
                
-                String sqlGetHFCCode = "SELECT Detail_Ref_code "
-                + "FROM lookup_detail "
-                + "WHERE Master_Ref_code = '0081' AND Description = '"+hfc+"'";
-                
-                ArrayList<ArrayList<String>> dataGetHFCCode = Conn.getData(sqlGetHFCCode);
-                
-              if(dataGetHFCCode.size() > 0)
-                {
-                     hfcCode = dataGetHFCCode.get(0).get(0);
-                }
-                else
-                {
-                      hfcCode = null;
-                }
+
 
                 //out.print("HFC Code : " + hfcCode+"\n");
 //                
@@ -132,7 +133,7 @@
                 //out.print(sqlGetLeaveStatus + "\n");
                  String sqlCheckAppPast = "SELECT pmi_no, hfc_cd, DATE(appointment_date) AS app_date, userid, appointment_type, status  "
                                         + "FROM pms_appointment "
-                                        + "WHERE pmi_no = '"+pmiNo+"' AND DATE(appointment_date) = '"+dateAppointment+"' AND hfc_cd = '"+hfcCode+"' AND status = 'active'";
+                                        + "WHERE pmi_no = '"+pmiNo+"' AND DATE(appointment_date) = '"+dateAppointment+"' AND hfc_cd = '"+hfc+"' AND status = 'active'";
                  ArrayList<ArrayList<String>> dataCheckAppPastActive = Conn.getData(sqlCheckAppPast);
                 
                    //out.print(sqlCheckAppPast + "\n");

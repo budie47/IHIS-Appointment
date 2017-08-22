@@ -12,6 +12,7 @@
 <%@page import="java.util.ArrayList"%>
 <%@page import="dBConn.Conn"%>
 <%@page import="main.RMIConnector"%>
+<%@page import="Config.Config"%>
 
 
 <%
@@ -39,7 +40,12 @@
 //    out.print("|" + host_server + "|" + host_port + "|" + error + "|");
 //    
 //    if (true) { return; }
+ Config.getBase_url(request);
+    Config.getFile_url(session);
     Conn Conn = new Conn();
+
+    String path = Conn.HOST;
+    //out.print(path);
 %>
 
 <!DOCTYPE html>
@@ -49,9 +55,10 @@
 
     <%@include file="assets/header.html"%>
     <link href="assets/css/login.css" rel="stylesheet">
+  
 
     <body class="bodyAuthenticate">
-
+  
         <div class="container m-scene">
             <div class="card card-container">
                 <!--                 <img class="profile-img-card" src="//lh3.googleusercontent.com/-6V8xOA6M7BA/AAAAAAAAAAI/AAAAAAAAAAA/rzlHcD0KYwo/photo.jpg?sz=120" alt="" /> -->

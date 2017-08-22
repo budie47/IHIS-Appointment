@@ -40,6 +40,26 @@
     String title = (String) session.getAttribute("OCCUPATION_CODE");
     String discipline = (String) session.getAttribute("DISCIPLINE_CODE");
     String subdiscipline = (String) session.getAttribute("SUBDISCIPLINE_CODE");
+    String my_1_gamba = session.getAttribute("PICTURE").toString();
+    
+    String hfc_name = null;
+    String discipline_name = null;
+    String subdiscipline_name = null;
+    
+    
+    String hfc_name_sql = "SELECT hfc_name FROM adm_health_facility WHERE hfc_cd = '"+hfc+"'";
+    ArrayList<ArrayList<String>> hfc_name_AL = Conn.getData(hfc_name_sql);
+    hfc_name = hfc_name_AL.get(0).get(0);
+    
+    String discipline_name_sql = "SELECT discipline_name FROM adm_discipline WHERE discipline_cd = '"+discipline+"' AND discipline_hfc_cd = '"+hfc+"';";
+    ArrayList<ArrayList<String>> discipline_name_AL = Conn.getData(discipline_name_sql);
+    discipline_name = discipline_name_AL.get(0).get(0);
+    
+    String subdiscipline_name_sql = "SELECT subdiscipline_name FROM adm_subdiscipline WHERE subdiscipline_hfc_cd = '"+hfc+"' AND discipline_cd = '"+discipline+"' AND subdiscipline_cd = '"+subdiscipline+"'" ;
+    ArrayList<ArrayList<String>> subdiscipline_name_AL = Conn.getData(subdiscipline_name_sql);
+    subdiscipline_name = subdiscipline_name_AL.get(0).get(0);
+    
+    
 
     //out.print(hfc);
     if (discipline == null) {
@@ -52,6 +72,10 @@
 //    out.print(name);
     String hfcCode = "SELECT `Description` FROM adm_lookup_detail WHERE `Master_Reference_code` = '0081' AND `Detail_Reference_code` = '" + hfc + "' AND hfc_cd = '" + hfc + "' ";
     ArrayList<ArrayList<String>> dataHFC = Conn.getData(hfcCode);
+    
+
+    
+    
 //out.print(hfcCode);
     String hfcName;
     if (dataHFC.size() > 0) {
@@ -296,6 +320,11 @@
 
 
         </script>
+        <style>
+            .fc-day:hover{
+                background-color: #51adf6 
+            }
+        </style>
         <div class="col-sm-3 col-md-2 sidebar">
             <div class="brand"></div>
             <!-- logo -->
@@ -307,12 +336,12 @@
             <!-- profile Sidebar -->
             <div class="profile">
                 <div class="profile-userpic">
-                    <img src="<%//= my_1_gamba%>" class="img-responsive" alt="profile pic">
+                    <img src="<%= my_1_gamba%>" class="img-responsive" alt="profile pic">
                 </div>
                 <!-- SIDEBAR USER TITLE -->
                 <div class="profile-usertitle">
                     <div class="profile-usertitle-name">
-                        <%=name%> (<%//=my_1_user_id%>)
+                        <%=name%> (<%=username%>)
                     </div>
                     <div class="profile-usertitle-job">
                         ADMINISTRATOR&nbsp;
@@ -323,24 +352,24 @@
                     <div class="collapse" id="viewExtraProfile">
                         -
                         <div class="profile-usertitle-job text-left">
-                            Health Facility: <strong><%//= my_1_hfcName%> <%//=my_1_hfc_cd%></strong>
+                            Health Facility: <br><strong><%= hfc_name%> (<%=hfc%>)</strong>
                         </div>
 
                         <div class="profile-usertitle-job text-left">
-                            Discipline: <strong><%//= my_1_dis_name%> <%//=my_1_dis_cd%></strong>
+                            Discipline: <br><strong><%= discipline_name%> (<%=discipline%>)</strong>
                         </div>
 
                         <div class="profile-usertitle-job text-left">
-                            Subdiscipline: <strong><%//= my_1_sub_name%> <%//=my_1_sub_cd%></strong>
+                            Subdiscipline: <br><strong><%= subdiscipline_name%> (<%=subdiscipline%>)</strong>
                         </div>
                     </div>
                 </div>
 
                 <!-- SIDEBAR BUTTONS -->
-                <div class="profile-userbuttons">
-                    <button type="button" class="btn btn-success btn-sm" onclick="window.location.href = '../Entrance/Profile'">Manage Account</button>
+                <!-- <div class="profile-userbuttons">
+                    <button type="button" class="btn btn-success btn-sm" onclick="window.location.href = '../Entrance/Profile'">Manage Account</button>-->
                     <!--<button type="button" class="btn btn-success btn-sm" onclick="clickManageAccount()">Manage Account</button>-->
-                </div>
+                <!-- </div> --> 
             </div>
 
             <hr/>
@@ -374,7 +403,7 @@
                 <li id="tab"><a data-toggle="tab" href="#doctorDirectory"><i class="fa fa-chevron-right sideIcon" aria-hidden="true" ></i>Doctor Availability</a></li>
                 <li class="dropdown" id="tab"><a class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-chevron-right sideIcon" aria-hidden="true" ></i>Appointment<span class="caret"></span></a>
                     <ul class="dropdown-menu">
-                        <li><a data-toggle="tab" class="dropdown-item" href="#addAppointment">Make Patient Appointment</a></li>
+                        <li><a data-toggle="tab" class="dropdown-item" href="#addAppointment" id="tab_ADD_Appointment">Make Patient Appointment</a></li>
                         <li><a data-toggle="tab" class="dropdown-item" href="#viewAppointment">View Patient Appointment</a></li>
                     </ul>
                 </li>
@@ -519,19 +548,6 @@
                                             <option></option>
                                             <option value="active">active</option>
                                             <option value="inactive">inactive</option>
-                                        <%}
-                                            else 
-                                        {
-                                            if (e5.equals("active")) 
-                                            {%> 
-                                                <option value="active" selected>active</option>
-                                                <option value="inactive">inactive</option><%
-                                            } 
-                                            else 
-                                            {%> 
-                                                <option value="active" >active</option>
-                                                <option value="inactive" selected>inactive</option><%
-                                    }%>
                                         <%}%>
                                       </select>
                                   </div>
@@ -1597,9 +1613,49 @@
                                         </table>
                                     </div>
                                 </div>
-                                <div id="addAppointment" class="tab-pane fade">
+                                            
+
+                        
+                                   <div id="addAppointment" class="tab-pane fade" >
                                     <h3 class="headerTitle">Make Patient Appointment</h3>
-                                    <div class="row myform">
+                                       <div class="row">
+                                        <div class="col-md-4">
+                                         
+                                                
+                                                <div class="col-md-12">
+                                                    <label class="col-md-12" for="textinput">Health Facility</label>
+                                                    <input class="form-control input-lg" type="text"  id="t_SEARCH_Appointment_HFC_NAME"   value="<%=hfc_name%>" readonly="">
+                                                     <input class="form-control input-lg" type="hidden"  id="t_SEARCH_Appointment_HFC_CD"   value="<%=hfc%>" readonly="">
+                                                </div>
+                                           
+                                        </div>
+                                        <div class="col-md-4">
+                                      
+                                                
+                                                <div class="col-md-12">
+                                                   <label class="col-md-12" for="textinput">Discipline</label>
+                                                   <input class="form-control input-lg" type="text"  id="t_SEARCH_Appointment_DIS_NAME"   value="<%=discipline_name%>" readonly="">
+                                                     <input class="form-control input-lg" type="hidden"  id="t_SEARCH_Appointment_DIS_CODE"   value="<%=discipline%>" readonly="">
+                                                </div>
+                                           
+                                        </div>
+                                        <div class="col-md-4">
+                                            
+                                                <div class="col-md-12">
+                                                    <label class="col-md-12" for="textinput">Subdiscipline</label>
+                                                    <input class="form-control input-lg" type="text"  id="t_SEARCH_Appointment_SUBDIS_NAME"  value="<%=subdiscipline_name%>" readonly="">
+                                                     <input class="form-control input-lg" type="hidden"  id="t_SEARCH_Appointment_SUBDIS_CODE"  value="<%=subdiscipline%>" readonly="">
+                                                </div>
+                                           
+                                            <div class="form-group" style="float: right; padding-right: 15px">
+                                                <button class="btn btn-primary" id="t_SEARCH_HFC_VIEW_Appointment" >Search</button>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                    <div id="AppointmentCalender"></div>
+                                    
+<!--                                  <div class="row myform">
                                         <div class="col-md-8 col-md-offset-2">
                                             <p>Search Patient : <b><i>Please choose only one</i></b></p>
                                             <form>
@@ -1806,18 +1862,18 @@
                                                         <select class="form-control" id="typeAppointment" name="appType" required>
                                                             <option></option>
                                                             <%
-                                                                String sqlAppType = "SELECT * FROM lookup_detail "
-                                                                        + "WHERE Master_Ref_code = '0086' ";
-                                                                ArrayList<ArrayList<String>> dataAppType = Conn.getData(sqlAppType);
+                                                                //String sqlAppType = "SELECT * FROM lookup_detail "
+                                                                //        + "WHERE Master_Ref_code = '0086' ";
+                                                               // ArrayList<ArrayList<String>> dataAppType = Conn.getData(sqlAppType);
 
-                                                                if (e48 == null) {
-                                                                    if (dataAppType.size() > 0) {
-                                                                        for (int i = 0; i < dataAppType.size(); i++) {%>
-                                                            <option value="<%=dataAppType.get(i).get(2)%>"><%=dataAppType.get(i).get(2)%></option>
-                                                            <% }
-                                                                    }
-                                                                } else {
-                                                                }%>
+                                                               // if (e48 == null) {
+                                                                //    if (dataAppType.size() > 0) {
+                                                                //        for (int i = 0; i < dataAppType.size(); i++) {%>
+                                                            <option value="<%//=dataAppType.get(i).get(2)%>"><%//=dataAppType.get(i).get(2)%></option>
+                                                            <% //}
+                                                                //    }
+                                                                //} else {
+                                                                //}%>
                                                         </select>
                                                     </div>
                                                 </div>
@@ -1828,7 +1884,7 @@
 
 
                                         </div>
-                                    </div>
+                                    </div>-->
                                 </div>
                                 <div id="viewAppointment" class="tab-pane fade">
                                     <h3 class="headerTitle">View Patient Appointment</h3>
@@ -2052,6 +2108,7 @@
         </div>
         <!-- main -->
 
+        <jsp:include page="calender/AppointmentAdd.jsp"/>
 
 
         <script src="<%=Config.getBase_url(request)%>jsfile/MakeAppointment.js"></script>             
@@ -2675,7 +2732,10 @@
                                                                 }
                                                             });
                                                         });
+                                                        
+                                                          
                                                     });
         </script>
+        <script src="calender/AppointmentCalendar.js" type="text/javascript"></script>
     </body>
 </html>
