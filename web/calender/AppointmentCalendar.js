@@ -247,16 +247,25 @@ function initilizeAppointmentCalendar(_hfc_cd_CODE,_discipline_CODE,_subdiscipli
                 var newDate = datAR[2] + "-" + datAR[1] + "-" + datAR[0];
                 $("#t_ADD_Appoinment_Date").val(newDate);
             }
-
-            
       },
+      eventClick:function(calEvent,jsEvent, view){
+          var id = calEvent.id;
+          var idAry = id.split("[-|-]");
+          var appointment_date = idAry[0];
+          var pmi_no = idAry[1];
+          
+          console.log(appointment_date);
+          console.log(pmi_no);
+          var detail_data = {
+              pmi_no : pmi_no,
+              appointment_date : appointment_date
+          }
+          getAppointmentDetail(detail_data);
+          $("#AppointmentViewModal").modal("show");
+          
 
-//        dayClick: function (date, jsEvent, view) {
-//            
-//
-//        }, 
+      },
         events:"calender/AppointmentData.jsp?h="+_hfc_cd_CODE+"&d="+_discipline_CODE+"&s="+_subdiscipline_CODE,
-        //}, events:[{ "title" : "SUNITO A/L NGAH MAN", "start" : "2017-08-23T09:30:00.00","end" : "null","id" : "2017-08-23 09:30:00.0"},{ "title" : "MUHAMAD BUDIE BIN BASRI", "start" : "2017-08-30T10:45:00.00","end" : "null","id" : "2017-08-30 10:45:00.0"},{ "title" : "CAROLYN VOO MIN FUI", "start" : "2017-08-23T13:00:00.00","end" : "null","id" : "2017-08-23 13:00:00.0"}]
     });
 }
 
@@ -267,9 +276,23 @@ function initilizeAppointmentCalendar(_hfc_cd_CODE,_discipline_CODE,_subdiscipli
             data: data,
             timeout: 10000,
             success: function (result) {
-                console.log(result);
+  
                 alert("Your Appointment is success added");
                 location.reload();
+            }
+        });
+    }
+    
+    function getAppointmentDetail(data){
+        $.ajax({
+            url: "calender/AppointmentViewData.jsp",
+            type: "post",
+            data: data,
+            timeout: 10000,
+            success: function (result) {
+               
+                $('#Appointment_Detail_Div').html(result);
+
             }
         });
     }
