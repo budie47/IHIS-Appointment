@@ -1648,7 +1648,7 @@
                                                 </div>
                                            
                                             <div class="form-group" style="float: right; padding-right: 15px">
-                                                <button class="btn btn-primary" id="t_SEARCH_HFC_VIEW_Appointment" >Search</button>
+<!--                                                <button class="btn btn-primary" id="t_SEARCH_HFC_VIEW_Appointment" >Search</button>-->
                                             </div>
                                         </div>
 
@@ -2109,7 +2109,7 @@
         <!-- main -->
 
         <jsp:include page="calender/AppointmentAdd.jsp"/>
-
+        <jsp:include page="calender/AppointmentView.jsp"/>
 
         <script src="<%=Config.getBase_url(request)%>jsfile/MakeAppointment.js"></script>             
         <script src="<%=Config.getBase_url(request)%>jsfile/ViewHoliday.js"></script> 

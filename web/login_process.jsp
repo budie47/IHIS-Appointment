@@ -13,10 +13,11 @@
     Conn Conn = new Conn();
     String username = request.getParameter("username");
     String password = request.getParameter("password");
-
-    String sql1 ="SELECT st.* "
-            + "FROM adm_signup_tbl st "
-            + "WHERE st.username = '"+username+"' ";
+   //                       0           1               2        3          4               5               6               7
+    String sql1 ="SELECT st.ic_no, st.username, st.password, st.`name`, st.birth_date, pb.`PMI_NO`, pb.`PATIENT_NAME`, pb.`ID_NO`"
+            + " FROM adm_signup_tbl st "
+            + "INNER JOIN pms_patient_biodata pb ON pb.`NEW_IC_NO` = st.ic_no "
+            + "WHERE username = '"+username+"'";
     ArrayList<ArrayList<String>> dataPatient = Conn.getData(sql1);
     
 //    out.print(sql1); if (true) { return; };
@@ -43,7 +44,9 @@
                 session.setAttribute("val3", val3);
                 session.setAttribute("val4", val4);
                 session.setAttribute("OCCUPATION_CODE", "PATIENT"); 
-
+                session.setAttribute("PMI_NO", dataPatient.get(index).get(5)); 
+                session.setAttribute("PATIENT_NAME", dataPatient.get(index).get(6)); 
+                session.setAttribute("ID_NO", dataPatient.get(index).get(7)); 
                 response.sendRedirect("patientSelectHFC.jsp");
             }
             else

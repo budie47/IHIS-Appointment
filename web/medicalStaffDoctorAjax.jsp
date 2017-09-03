@@ -236,6 +236,7 @@ Conn Conn = new Conn();
 <html>
     <title>e-Appointment Doctor Page</title>
     <%@include file="header.jsp"%>
+    <%@include file="assets/header.html"%>
     <body>
         <div class="container-fluid">
             <div class="row">

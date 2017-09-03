@@ -19,7 +19,7 @@
         <div id="AppointmentCalender">
         </div>
         <jsp:include page="AppointmentAdd.jsp"/>
-        
+        <jsp:include page="AppointmentView.jsp"/>
     </body>
     
      <jsp:include page="footerCalender.jsp"/>

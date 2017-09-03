@@ -10,6 +10,7 @@
         <link href="<%=Config.getBase_url(request) %>authenticate.css" rel="stylesheet" type="text/css" />
         
         <link rel="stylesheet" href="<%=Config.getBase_url(request) %>js/jquery-ui.css">
+        
         <script src="<%=Config.getBase_url(request) %>js/jquery-ui.js"></script>
         
         <link rel="stylesheet" type="text/css" href="<%=Config.getBase_url(request) %>js/jquery.ptTimeSelect.css"> 
@@ -27,8 +28,8 @@
         <script src='calender/fullcalendar/lib/moment.min.js'></script>
         <script src='calender/fullcalendar/fullcalendar.js'></script>
 
-
-        
+        <script src="SearchFacility/SearchFacility.js" type="text/javascript"></script>
+        <script src="assets/js/jquery.flexdatalist.min.js" type="text/javascript"></script>
         
         
         <%

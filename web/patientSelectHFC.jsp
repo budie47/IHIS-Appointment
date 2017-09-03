@@ -43,12 +43,12 @@
                     <div class="form-group"> 
                         <select class="form-control" id="hfc_code" name="hfc_name" placeholder="Select Hospital/Clinic" required>
                             <option disabled selected>Select Hospital/Clinic</option>
-                            <%                                String sqlHFCCode = "SELECT Detail_Ref_code, Description FROM lookup_detail WHERE Master_Ref_code = '0081'";
+                            <%                                String sqlHFCCode = "select hfc_name from adm_health_facility";
                                 ArrayList<ArrayList<String>> dataHFCCode = Conn.getData(sqlHFCCode);
 
                                 if (dataHFCCode.size() > 0) {
                                     for (int i = 0; i < dataHFCCode.size(); i++) {%>
-                            <option value="<%=dataHFCCode.get(i).get(1)%>"><%=dataHFCCode.get(i).get(1)%></option>
+                            <option value="<%=dataHFCCode.get(i).get(0)%>"><%=dataHFCCode.get(i).get(0)%></option>
                             <% }
                                 }
 
