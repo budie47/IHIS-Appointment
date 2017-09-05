@@ -72,13 +72,14 @@
                     if (dataStaff.get(i).get(3).equals(password)) {
                         session.setAttribute("username", username);
                         String hfc = dataStaff.get(0).get(1);
+                        String title = dataStaff.get(i).get(4);
                         session.setAttribute("HEALTH_FACILITY_CODE", hfc);
+                        session.setAttribute("OCCUPATION_CODE", title);
                         String name = dataStaff.get(0).get(2);
                         session.setAttribute("USER_NAME", name);
-                        String title = dataStaff.get(0).get(4);
-                        session.setAttribute("OCCUPATION_CODE", title);
                         session.setAttribute("DISCIPLINE_CODE", disCode);
                         session.setAttribute("SUBDISCIPLINE_CODE", subCode);
+                        session.setAttribute("PICTURE", dataStaff.get(i).get(5));
                         response.sendRedirect("medicalStaffDoctorAjax.jsp");
                         
  

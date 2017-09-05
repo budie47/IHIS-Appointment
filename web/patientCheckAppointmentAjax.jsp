@@ -32,8 +32,8 @@
                 String pmiNo = request.getParameter("pmiNo");
                 String dataUserId = request.getParameter("dataUserId");
                 String ic = request.getParameter("ic");
-                //String discipline = request.getParameter("discipline");
-                //String subdiscipline = request.getParameter("subdiscipline");
+                String discipline = request.getParameter("discipline");
+                String subdiscipline = request.getParameter("subdiscipline");
                 String doctor = request.getParameter("doctor");
                 String dateAppointment = request.getParameter("dateAppointment");
                 String timeAppointment = request.getParameter("timeAppointment");
@@ -46,8 +46,7 @@
                 
                 //out.print(hfc);
                 
-                String discipline;
-                String subdiscipline;
+           
                 
                 String id = null;
                 
@@ -133,7 +132,7 @@
                 //out.print(sqlGetLeaveStatus + "\n");
                  String sqlCheckAppPast = "SELECT pmi_no, hfc_cd, DATE(appointment_date) AS app_date, userid, appointment_type, status  "
                                         + "FROM pms_appointment "
-                                        + "WHERE pmi_no = '"+pmiNo+"' AND DATE(appointment_date) = '"+dateAppointment+"' AND hfc_cd = '"+hfc+"' AND status = 'active'";
+                                        + "WHERE pmi_no = '"+pmiNo+"' AND DATE(appointment_date) = '"+dateAppointment+"' AND hfc_cd = '"+hfc+"' AND status = 'active' AND discipline = '"+discipline+"' AND subdiscipline = '"+subdiscipline+"'" ;
                  ArrayList<ArrayList<String>> dataCheckAppPastActive = Conn.getData(sqlCheckAppPast);
                 
                    //out.print(sqlCheckAppPast + "\n");
@@ -147,7 +146,7 @@
 
                 String sqlCheckExistDate = "SELECT DATE(appointment_date) AS appointment_date, userid, TIME(start_time) AS start_time, status "
                         + "FROM pms_appointment "
-                        + "WHERE DATE(appointment_date) = '"+dateAppointment+"' AND userid = '"+doctor+"' AND TIME(start_time) = '"+timeAppointment+"' AND status = 'active'";
+                        + "WHERE DATE(appointment_date) = '"+dateAppointment+"' AND userid = '"+doctor+"' AND TIME(start_time) = '"+timeAppointment+"' AND status = 'active' AND discipline = '"+discipline+"' AND subdiscipline = '"+subdiscipline+"'";
                 ArrayList<ArrayList<String>> dataCheckExistDate  = Conn.getData(sqlCheckExistDate);
                 
                 //out.print(sqlCheckExistDate + "\n");

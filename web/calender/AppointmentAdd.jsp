@@ -152,7 +152,8 @@
                                         <div class="form-group">
                                             <label class="col-md-12" for="textinput">Time</label>
                                             <div class="col-md-12">
-                                                <select class="form-control input-lg" id="t_ADD_Appoinment_Time" name="appTime" required>
+                                                <div id="div_ADD_Appoinment_TIME"></div>
+<!--                                                <select class="form-control input-lg" id="t_ADD_Appoinment_Time" name="appTime" required>
                                                     <option></option>
                                                     <option value="09:00:00"><%out.print("09:00:00");%></option>
                                                     <option value="09:15:00"><%out.print("09:15:00");%></option>
@@ -187,7 +188,7 @@
                                                     <option value="16:00:00"><%out.print("16:00:00");%></option>
                                                     <option value="16:15:00"><%out.print("16:15:00");%></option>
                                                     <option value="16:30:00"><%out.print("16:30:00");%></option>
-                                                </select>
+                                                </select>-->
 
                                             </div>
                                         </div>

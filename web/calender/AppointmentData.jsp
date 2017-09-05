@@ -18,6 +18,7 @@
     String hfc_cd = request.getParameter("h");
     String discipline_cd = request.getParameter("d");
     String subdiscipline_cd = request.getParameter("s");
+    String duration = request.getParameter("p");
 
     //String key ="fever";                     //0             1           2           3         4          
     String searchProblem = "SELECT bio.`PATIENT_NAME`, app.appointment_date , app.`PMI_NO`, app.start_time, app.end_time FROM pms_appointment app INNER JOIN pms_patient_biodata bio ON app.pmi_no = bio.`PMI_NO`  WHERE app.hfc_cd = '"+hfc_cd+"' AND app.discipline = '"+discipline_cd+"' AND app.subdiscipline = '"+subdiscipline_cd+"';";
@@ -36,7 +37,7 @@
             
             String end_date = null;
                                      LocalDateTime localDateTime = LocalDateTime.parse(search.get(i).get(1), format);
-                                     LocalDateTime endDateTime = LocalDateTime.parse(search.get(i).get(1), format).plusMinutes(30);
+                                     LocalDateTime endDateTime = LocalDateTime.parse(search.get(i).get(1), format).plusMinutes(Integer.parseInt(duration));
                              String str = localDateTime.toString().substring(0, localDateTime.toString().length() - 4);
                              String end = endDateTime.toString().substring(0, endDateTime.toString().length() - 4);
             if (i == search.size() - 1) {

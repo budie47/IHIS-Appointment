@@ -20,19 +20,15 @@
                 String subdiscipline_cd = request.getParameter("subdiscipline_cd");
                 %>
 
-<select class="form-control input-lg" id="t_ADD_Appoinment_Doctor" name="appDoc" required>
+<select class="form-control input-lg" id="t_ADD_Appoinment_Time" name="t_ADD_Appoinment_Time" required>
     <option></option>
     <%
-        String sqlDoc = "SELECT dr.user_id, au.`USER_NAME` "
-                + "FROM pms_duty_roster dr  "
-                + "INNER JOIN adm_users au ON dr.user_id = au.`USER_ID` "
-                + "WHERE dr.status = 'active' AND (CURDATE() BETWEEN dr.start_date AND dr.end_date)"
-                + " AND dr.hfc_cd = '"+hfc_cd+"' AND au.`OCCUPATION_CODE` = '002' ;";
+        String sqlDoc = "select start_time from pms_appointment_time where hfc_cd = '"+hfc_cd+"' AND discipline_cd = '"+discipline_cd+"' AND subdiscipline_cd = '"+subdiscipline_cd+"'";
         ArrayList<ArrayList<String>> dataDoctor = Conn.getData(sqlDoc);
 
         if (dataDoctor.size() > 0) {
             for (int i = 0; i < dataDoctor.size(); i++) {%>
-    <option value="<%=dataDoctor.get(i).get(0)%>"><%=dataDoctor.get(i).get(1)%></option>
+    <option value="<%=dataDoctor.get(i).get(0)+":00"%>"><%=dataDoctor.get(i).get(0)+":00"%></option>
     <% }
                                                         }%>
 

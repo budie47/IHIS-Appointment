@@ -42,24 +42,41 @@
     String subdiscipline = (String) session.getAttribute("SUBDISCIPLINE_CODE");
     String my_1_gamba = session.getAttribute("PICTURE").toString();
     
+      String start_time_calendar = "08:00";
+      String end_time_calendar = "18:00:00";;
+      String duration_time_calendar = "00:15";
+      
+    
+      String sqlTimeAppoinment = "SELECT start_time, consultation_period FROM pms_appointment_time pat WHERE hfc_cd = '"+hfc+"' AND discipline_cd = '"+discipline+"' AND subdiscipline_cd = '"+subdiscipline+"' ORDER BY start_time ASC";
+      String sqlEndTimeAppoinment = "select ADDTIME(start_time,consultation_period),consultation_period from pms_appointment_time where hfc_cd = '"+hfc+"' AND discipline_cd = '"+discipline+"' AND subdiscipline_cd = '"+subdiscipline+"' ORDER BY start_time DESC LIMIT 1";
+   
+    ArrayList<ArrayList<String>> data_time_appointment = Conn.getData(sqlTimeAppoinment);
+    ArrayList<ArrayList<String>> data_End_time_appointment = Conn.getData(sqlEndTimeAppoinment);
+    
+   if(data_time_appointment.size() >0){
+       int index_date_time_appointment = data_time_appointment.size();
+     start_time_calendar = data_time_appointment.get(0).get(0);
+     end_time_calendar = data_End_time_appointment.get(0).get(0);
+    // duration_time_calendar = data_End_time_appointment.get(0).get(1);
+   }
+//    
+    
+
     String hfc_name = null;
     String discipline_name = null;
     String subdiscipline_name = null;
-    
-    
-    String hfc_name_sql = "SELECT hfc_name FROM adm_health_facility WHERE hfc_cd = '"+hfc+"'";
+
+    String hfc_name_sql = "SELECT hfc_name FROM adm_health_facility WHERE hfc_cd = '" + hfc + "'";
     ArrayList<ArrayList<String>> hfc_name_AL = Conn.getData(hfc_name_sql);
     hfc_name = hfc_name_AL.get(0).get(0);
-    
-    String discipline_name_sql = "SELECT discipline_name FROM adm_discipline WHERE discipline_cd = '"+discipline+"' AND discipline_hfc_cd = '"+hfc+"';";
+
+    String discipline_name_sql = "SELECT discipline_name FROM adm_discipline WHERE discipline_cd = '" + discipline + "' AND discipline_hfc_cd = '" + hfc + "';";
     ArrayList<ArrayList<String>> discipline_name_AL = Conn.getData(discipline_name_sql);
     discipline_name = discipline_name_AL.get(0).get(0);
-    
-    String subdiscipline_name_sql = "SELECT subdiscipline_name FROM adm_subdiscipline WHERE subdiscipline_hfc_cd = '"+hfc+"' AND discipline_cd = '"+discipline+"' AND subdiscipline_cd = '"+subdiscipline+"'" ;
+
+    String subdiscipline_name_sql = "SELECT subdiscipline_name FROM adm_subdiscipline WHERE subdiscipline_hfc_cd = '" + hfc + "' AND discipline_cd = '" + discipline + "' AND subdiscipline_cd = '" + subdiscipline + "'";
     ArrayList<ArrayList<String>> subdiscipline_name_AL = Conn.getData(subdiscipline_name_sql);
     subdiscipline_name = subdiscipline_name_AL.get(0).get(0);
-    
-    
 
     //out.print(hfc);
     if (discipline == null) {
@@ -72,10 +89,7 @@
 //    out.print(name);
     String hfcCode = "SELECT `Description` FROM adm_lookup_detail WHERE `Master_Reference_code` = '0081' AND `Detail_Reference_code` = '" + hfc + "' AND hfc_cd = '" + hfc + "' ";
     ArrayList<ArrayList<String>> dataHFC = Conn.getData(hfcCode);
-    
 
-    
-    
 //out.print(hfcCode);
     String hfcName;
     if (dataHFC.size() > 0) {
@@ -368,7 +382,7 @@
                 <!-- SIDEBAR BUTTONS -->
                 <!-- <div class="profile-userbuttons">
                     <button type="button" class="btn btn-success btn-sm" onclick="window.location.href = '../Entrance/Profile'">Manage Account</button>-->
-                    <!--<button type="button" class="btn btn-success btn-sm" onclick="clickManageAccount()">Manage Account</button>-->
+                <!--<button type="button" class="btn btn-success btn-sm" onclick="clickManageAccount()">Manage Account</button>-->
                 <!-- </div> --> 
             </div>
 
@@ -405,6 +419,7 @@
                     <ul class="dropdown-menu">
                         <li><a data-toggle="tab" class="dropdown-item" href="#addAppointment" id="tab_ADD_Appointment">Make Patient Appointment</a></li>
                         <li><a data-toggle="tab" class="dropdown-item" href="#viewAppointment">View Patient Appointment</a></li>
+                        <li><a data-toggle="tab" class="dropdown-item" href="#manageAppointment">Manage Appointment Time</a></li>
                     </ul>
                 </li>
                 <li id="tab"><a href="http://www.utem.edu.my/pusat_kesihatan/en/" target="_blank"><i class="fa fa-chevron-right sideIcon" aria-hidden="true" ></i>University Health Centre</a></li>
@@ -1070,9 +1085,9 @@
                                                 <select class="form-control" id="staffIDRoster" name="staffID">
                                                     <option></option>
                                                     <%
-                                                        String sql7 = "SELECT USER_ID, USER_NAME, OCCUPATION_CODE, HEALTH_FACILITY_CODE "
-                                                                + "FROM adm_users "
-                                                                + "WHERE (OCCUPATION_CODE = 'DOCTOR' OR OCCUPATION_CODE = 'NURSE' OR OCCUPATION_CODE = '003' OR OCCUPATION_CODE = '002') AND HEALTH_FACILITY_CODE = '" + hfc + "'";
+                                                        String sql7 = "SELECT  ar.USER_ID, au.USER_NAME, au.OCCUPATION_CODE, au.HEALTH_FACILITY_CODE FROM adm_user_access_role ar "
+                                                                + "INNER JOIN adm_users au ON au.`USER_ID` = ar.`USER_ID` "
+                                                                + "WHERE ar.`HEALTH_FACILITY_CODE` = '"+hfc+"' AND ar.`DISCIPLINE_CODE` = '"+discipline+"' AND ar.`SUBDISCIPLINE_CODE` = '"+subdiscipline+"';";
                                                         ArrayList<ArrayList<String>> dataUserRoster = Conn.getData(sql7);
 
                                                         if (dataUserRoster.size() > 0) {
@@ -1613,1129 +1628,1017 @@
                                         </table>
                                     </div>
                                 </div>
-                                            
 
-                        
-                                   <div id="addAppointment" class="tab-pane fade" >
+
+
+                                <div id="addAppointment" class="tab-pane fade" >
                                     <h3 class="headerTitle">Make Patient Appointment</h3>
-                                       <div class="row">
+                                    <div class="row">
                                         <div class="col-md-4">
-                                         
-                                                
-                                                <div class="col-md-12">
-                                                    <label class="col-md-12" for="textinput">Health Facility</label>
-                                                    <input class="form-control input-lg" type="text"  id="t_SEARCH_Appointment_HFC_NAME"   value="<%=hfc_name%>" readonly="">
-                                                     <input class="form-control input-lg" type="hidden"  id="t_SEARCH_Appointment_HFC_CD"   value="<%=hfc%>" readonly="">
-                                                </div>
-                                           
+
+
+                                            <div class="col-md-12">
+                                                <label class="col-md-12" for="textinput">Health Facility</label>
+                                                <input class="form-control input-lg" type="text"  id="t_SEARCH_Appointment_HFC_NAME"   value="<%=hfc_name%>" readonly="">
+                                                <input class="form-control input-lg" type="hidden"  id="t_SEARCH_Appointment_HFC_CD"   value="<%=hfc%>" readonly="">
+                                                <input class="form-control input-lg" type="hidden"  id="t_ADD_Appointment_START_TIME"   value="<%=start_time_calendar%>" readonly="">
+                                            </div>
+
                                         </div>
                                         <div class="col-md-4">
-                                      
-                                                
-                                                <div class="col-md-12">
-                                                   <label class="col-md-12" for="textinput">Discipline</label>
-                                                   <input class="form-control input-lg" type="text"  id="t_SEARCH_Appointment_DIS_NAME"   value="<%=discipline_name%>" readonly="">
-                                                     <input class="form-control input-lg" type="hidden"  id="t_SEARCH_Appointment_DIS_CODE"   value="<%=discipline%>" readonly="">
-                                                </div>
-                                           
+
+
+                                            <div class="col-md-12">
+                                                <label class="col-md-12" for="textinput">Discipline</label>
+                                                <input class="form-control input-lg" type="text"  id="t_SEARCH_Appointment_DIS_NAME"   value="<%=discipline_name%>" readonly="">
+                                                <input class="form-control input-lg" type="hidden"  id="t_SEARCH_Appointment_DIS_CODE"   value="<%=discipline%>" readonly="">
+                                                <input class="form-control input-lg" type="hidden"  id="t_ADD_Appointment_END_TIME"   value="<%=end_time_calendar%>" readonly="">
+                                            </div>
+
                                         </div>
                                         <div class="col-md-4">
-                                            
-                                                <div class="col-md-12">
-                                                    <label class="col-md-12" for="textinput">Subdiscipline</label>
-                                                    <input class="form-control input-lg" type="text"  id="t_SEARCH_Appointment_SUBDIS_NAME"  value="<%=subdiscipline_name%>" readonly="">
-                                                     <input class="form-control input-lg" type="hidden"  id="t_SEARCH_Appointment_SUBDIS_CODE"  value="<%=subdiscipline%>" readonly="">
-                                                </div>
-                                           
+
+                                            <div class="col-md-12">
+                                                <label class="col-md-12" for="textinput">Subdiscipline</label>
+                                                <input class="form-control input-lg" type="text"  id="t_SEARCH_Appointment_SUBDIS_NAME"  value="<%=subdiscipline_name%>" readonly="">
+                                                <input class="form-control input-lg" type="hidden"  id="t_SEARCH_Appointment_SUBDIS_CODE"  value="<%=subdiscipline%>" readonly="">
+                                                <input class="form-control input-lg" type="hidden"  id="t_ADD_Appointment_DURATION"  value="<%=duration_time_calendar%>" readonly="">
+                                            </div>
+
                                             <div class="form-group" style="float: right; padding-right: 15px">
-<!--                                                <button class="btn btn-primary" id="t_SEARCH_HFC_VIEW_Appointment" >Search</button>-->
+                                                <!--                                                <button class="btn btn-primary" id="t_SEARCH_HFC_VIEW_Appointment" >Search</button>-->
                                             </div>
                                         </div>
 
                                     </div>
                                     <div id="AppointmentCalender"></div>
-                                    
-<!--                                  <div class="row myform">
-                                        <div class="col-md-8 col-md-offset-2">
-                                            <p>Search Patient : <b><i>Please choose only one</i></b></p>
-                                            <form>
-                                                <div class="row" style="padding: 1%; margin-bottom: 2%; background-color: #d9d9d9">
-                                                    <input type="hidden" name="canceledReason" value="-">
-                                                    <div class="col-md-4 col-sm-12">
-                                                        <div class="form-group">
-                                                            <label>PMI No :</label>
-                                                            <input type="text" name="pmiNo" id="pmiNoSearch" class="form-control" placeholder=""/>
-
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="col-md-4 col-sm-12">
-                                                        <div class="form-group">
-                                                            <label>IC No :</label>
-                                                            <input type="text" name="icNo" id="icNoSearch" class="form-control" placeholder=""/>
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="col-md-4 col-sm-12">
-                                                        <div class="form-group">
-                                                            <label>ID No :</label>
-                                                            <input type="text" name="idNo" id="idNoSearch" class="form-control" placeholder=""/>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <button class="btn btn-xs btn-success" id="adminSearchPatient" style="margin-bottom: 3%">Search</button>
-                                            </form>
-                                            <p style="color: red"> *** Please make sure that you have check the availability and also view the holiday before make an appointment</p>
-                                            <p>Patient Details :</p>
-                                            <form class="form-horizontal">
-                                                <%
-                                                    String pmiNO = request.getParameter("pmiNo");
-                                                    String icNo = request.getParameter("icNo");
-                                                    String idType = request.getParameter("idType");
-                                                    String idNo = request.getParameter("idNo");
-                                                    String patientName = request.getParameter("patientName");
-                                                    String appDate = request.getParameter("appDate");
-                                                    String appTime = request.getParameter("appTime");
-                                                    String appDoc = request.getParameter("appDoc");
-                                                    String disApp = request.getParameter("disApp");
-                                                    String subDisApp = request.getParameter("subDisApp");
-                                                    String appType = request.getParameter("appType");
-
-                                                    String sql = "SELECT * "
-                                                            + "FROM pms_patient_biodata "
-                                                            + "WHERE PMI_NO='" + pmiNO + "' OR NEW_IC_NO = '" + icNo + "' OR ID_NO = '" + idNo + "'";
-                                                    ArrayList<ArrayList<String>> dataPatient = Conn.getData(sql);
-                                                    //                            
-
-                                                    //                            out.print(sql);
-                                                    String sqlPatientApp = "SELECT * "
-                                                            + "FROM pms_appointment";
-                                                    ArrayList<ArrayList<String>> dataPatientApp = Conn.getData(sqlPatientApp);
-                                                    //                            displayValue 
-                                                    //                            out.print(sql);
-%>
-                                                <div class="form-group" >
-                                                    <label class="control-label col-sm-2" for="pmiNo">PMI No : </label>  
-                                                    <div class="col-sm-10">   
-                                                        <input type="hidden" name="role" value="<%=title%>" id="role">
-                                                        <input type="hidden" name="disciple" value="<%=discipline%>" id="disciple">
-                                                        <input type="hidden" name="subdiscipline" value="<%=subdiscipline%>" id="subdisciplineAppointment">
-                                                        <input type="hidden" name="HFCCode" value="<%=hfc%>" id="HFCCode">
-                                                        <input name="pmiNo" value=""  id="pmiNo" type="text" class="form-control" readonly>
-                                                        <input type="hidden" name="ic"  id="ic">
 
 
-                                                    </div>
-                                                </div> 
-                                                <div class="form-group">
-                                                    <label class="control-label col-sm-2" for="patientName">Patient Name : </label>  
-                                                    <div class="col-sm-10">   
-
-
-                                                        <input type="text" name="patientName" id="patientName" value="" class="form-control" readonly> 
-                                                    </div>
-                                                </div>
-                                                <div class="form-group">
-                                                    <label class="control-label col-sm-2" for="idNo">ID No : </label>  
-                                                    <div class="col-sm-10">   
-
-
-                                                        <input name="idNo" value="" type="text" id="idNo" class="form-control" readonly> 
-
-                                                    </div>
-                                                </div>
-                                                <div class="form-group">
-                                                    <label class="control-label col-sm-2" for="appDoc">*Doctor : </label>  
-                                                    <div class="col-sm-10">   
-                                                        <select class="form-control" id="doctorApp" name="appDoc" required>
-                                                            <option></option>
-                                                            <%
-                                                                String sqlDoc = "SELECT * "
-                                                                        + "FROM adm_users "
-                                                                        + "WHERE HEALTH_FACILITY_CODE = '" + hfc + "' AND (OCCUPATION_CODE = 'DOCTOR' OR OCCUPATION_CODE='002') ;";
-                                                                ArrayList<ArrayList<String>> dataDoctor = Conn.getData(sqlDoc);
-
-                                                                if (dataDoctor.size() > 0) {
-                                                                    for (int i = 0; i < dataDoctor.size(); i++) {%>
-                                                            <option value="<%=dataDoctor.get(i).get(0)%>"><%=dataDoctor.get(i).get(2)%></option>
-                                                            <% }
-                                                                }%>
-
-                                                        </select>
-                                                    </div>
-                                                </div>
-
-                                                <div class="form-group">
-                                                    <label class="control-label col-sm-2" for="appDate">*Appointment Date : </label>  
-                                                    <div class="col-sm-10">   
-                                                        <%if (appDate == null) {%>
-                                                        <input  name="appDate" type="text" id="datepicker" class="form-control" required>
-                                                        <%} else {%>
-                                                        <input name="appDate" value="<%= appDate%>" type="date"  class="form-control" required>
-                                                        <%}%>
-                                                    </div>
-                                                </div>
-                                                <script>
-                                                    var today = new Date().toISOString().split('T')[0];
-                                                    document.getElementsByName("appDate")[0].setAttribute('min', today);
-                                                </script>
-                                                <div class="form-group">
-                                                    <label class="control-label col-sm-2" for="appTime">*Appointment Time : </label>  
-                                                    <div class="col-sm-10">   
-                                                        <select class="form-control" id="timepicker" name="appTime" required>
-                                                            <option></option>
-                                                            <%if (appTime == null) {%>
-                                                            <option value="09:00:00"><%out.print("09:00:00");%></option>
-                                                            <option value="09:15:00"><%out.print("09:15:00");%></option>
-                                                            <option value="09:30:00"><%out.print("09:30:00");%></option>
-                                                            <option value="09:45:00"><%out.print("09:45:00");%></option>
-                                                            <option value="10:00:00"><%out.print("10:00:00");%></option>
-                                                            <option value="10:15:00"><%out.print("10:15:00");%></option>
-                                                            <option value="10:30:00"><%out.print("10:30:00");%></option>
-                                                            <option value="10:35:00"><%out.print("10:35:00");%></option>
-                                                            <option value="10:40:00"><%out.print("10:40:00");%></option>
-                                                            <option value="10:45:00"><%out.print("10:45:00");%></option>
-                                                            <option value="11:00:00"><%out.print("11:00:00");%></option>
-                                                            <option value="11:15:00"><%out.print("11:15:00");%></option>
-                                                            <option value="11:30:00"><%out.print("11:30:00");%></option>
-                                                            <option value="11:45:00"><%out.print("11:45:00");%></option>
-                                                            <option value="12:00:00"><%out.print("12:00:00");%></option>
-                                                            <option value="12:15:00"><%out.print("12:15:00");%></option>
-                                                            <option value="12:30:00"><%out.print("12:30:00");%></option>
-                                                            <option value="12:45:00"><%out.print("12:45:00");%></option>
-                                                            <option value="13:00:00"><%out.print("13:00:00");%></option>
-                                                            <option value="13:15:00"><%out.print("13:15:00");%></option>
-                                                            <option value="13:30:00"><%out.print("13:30:00");%></option>
-                                                            <option value="13:45:00"><%out.print("13:45:00");%></option>
-                                                            <option value="14:00:00"><%out.print("14:00:00");%></option>
-                                                            <option value="14:15:00"><%out.print("14:15:00");%></option>
-                                                            <option value="14:30:00"><%out.print("14:30:00");%></option>
-                                                            <option value="14:45:00"><%out.print("14:45:00");%></option>
-                                                            <option value="15:00:00"><%out.print("15:00:00");%></option>
-                                                            <option value="15:15:00"><%out.print("15:15:00");%></option>
-                                                            <option value="15:30:00"><%out.print("15:30:00");%></option>
-                                                            <option value="15:45:00"><%out.print("15:45:00");%></option>
-                                                            <option value="16:00:00"><%out.print("16:00:00");%></option>
-                                                            <option value="16:15:00"><%out.print("16:15:00");%></option>
-                                                            <option value="16:30:00"><%out.print("16:30:00");%></option>
-                                                            <%} else {%>
-                                                            <option value="09:00:00"><%out.print("09:00:00");%></option>
-                                                            <option value="09:15:00"><%out.print("09:15:00");%></option>
-                                                            <option value="09:30:00"><%out.print("09:30:00");%></option>
-                                                            <option value="09:45:00"><%out.print("09:45:00");%></option>
-                                                            <option value="10:00:00"><%out.print("10:00:00");%></option>
-                                                            <option value="10:15:00"><%out.print("10:15:00");%></option>
-                                                            <option value="10:30:00"><%out.print("10:30:00");%></option>
-                                                            <option value="10:35:00"><%out.print("10:35:00");%></option>
-                                                            <option value="10:40:00"><%out.print("10:40:00");%></option>
-                                                            <option value="10:45:00"><%out.print("10:45:00");%></option>
-                                                            <option value="11:00:00"><%out.print("11:00:00");%></option>
-                                                            <option value="11:15:00"><%out.print("11:15:00");%></option>
-                                                            <option value="11:30:00"><%out.print("11:30:00");%></option>
-                                                            <option value="11:45:00"><%out.print("11:45:00");%></option>
-                                                            <option value="12:00:00"><%out.print("12:00:00");%></option>
-                                                            <option value="12:15:00"><%out.print("12:15:00");%></option>
-                                                            <option value="12:30:00"><%out.print("12:30:00");%></option>
-                                                            <option value="12:45:00"><%out.print("12:45:00");%></option>
-                                                            <option value="13:00:00"><%out.print("13:00:00");%></option>
-                                                            <option value="13:15:00"><%out.print("13:15:00");%></option>
-                                                            <option value="13:30:00"><%out.print("13:30:00");%></option>
-                                                            <option value="13:45:00"><%out.print("13:45:00");%></option>
-                                                            <option value="14:00:00"><%out.print("14:00:00");%></option>
-                                                            <option value="14:15:00"><%out.print("14:15:00");%></option>
-                                                            <option value="14:30:00"><%out.print("14:30:00");%></option>
-                                                            <option value="14:45:00"><%out.print("14:45:00");%></option>
-                                                            <option value="15:00:00"><%out.print("15:00:00");%></option>
-                                                            <option value="15:15:00"><%out.print("15:15:00");%></option>
-                                                            <option value="15:30:00"><%out.print("15:30:00");%></option>
-                                                            <option value="15:45:00"><%out.print("15:45:00");%></option>
-                                                            <option value="16:00:00"><%out.print("16:00:00");%></option>
-                                                            <option value="16:15:00"><%out.print("16:15:00");%></option>
-                                                            <option value="16:30:00"><%out.print("16:30:00");%></option>
-                                                            <%} %>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                                <div class="form-group">
-                                                    <label class="control-label col-sm-2" for="appType">*Appointment Type : </label>  
-                                                    <div class="col-sm-10">   
-                                                        <select class="form-control" id="typeAppointment" name="appType" required>
-                                                            <option></option>
-                                                            <%
-                                                                //String sqlAppType = "SELECT * FROM lookup_detail "
-                                                                //        + "WHERE Master_Ref_code = '0086' ";
-                                                               // ArrayList<ArrayList<String>> dataAppType = Conn.getData(sqlAppType);
-
-                                                               // if (e48 == null) {
-                                                                //    if (dataAppType.size() > 0) {
-                                                                //        for (int i = 0; i < dataAppType.size(); i++) {%>
-                                                            <option value="<%//=dataAppType.get(i).get(2)%>"><%//=dataAppType.get(i).get(2)%></option>
-                                                            <% //}
-                                                                //    }
-                                                                //} else {
-                                                                //}%>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                                <button class="btn btn-xs btn-success"  value="Check" id="check" style="margin-bottom: 6%">Check</button>
-                                                <button class="btn btn-xs btn-success" type="reset" value="Reset" style="margin-bottom: 6%">Reset</button>
-
-                                            </form>
-
-
-                                        </div>
-                                    </div>-->
                                 </div>
-                                <div id="viewAppointment" class="tab-pane fade">
-                                    <h3 class="headerTitle">View Patient Appointment</h3>
-                                    <form method="post" name="myform" role="form" action="sendReminder.jsp">
-                                        <button id="sendReminder" class="btn btn-primary">Send Appointment Reminder</button>
-                                    </form><br>
-                                    <span id="showMessage" ></span>
-                                    <%
-                                        String sqlReminder = "SELECT w.*,ld.Description AS state_name "
-                                                + "FROM adm_lookup_detail ld, "
-                                                + "(SELECT t.* "
-                                                + "FROM "
-                                                + "(SELECT pa.pmi_no, pa.hfc_cd, DATE(pa.appointment_date) AS appDate, TIME(pa.start_time) AS start_time, "
-                                                + "pb.MOBILE_PHONE, DATEDIFF(pa.appointment_date, NOW()) as DiffDate, pb.PATIENT_NAME, pb.EMAIL_ADDRESS "
-                                                + "FROM pms_appointment pa, pms_patient_biodata pb "
-                                                + "WHERE pa.pmi_no = pb.PMI_NO AND pa.status = 'active' AND remarks = 'pending' AND (DATEDIFF(pa.appointment_date, NOW())>1 ))t "
-                                                + "WHERE t.DiffDate<3)w "
-                                                + "WHERE w.hfc_cd = ld.Detail_Ref_code AND ld.Master_Ref_code = '0081'  AND w.hfc_cd= '" + hfc + "'";
-                                        ArrayList<ArrayList<String>> dataReminder = Conn.getData(sqlReminder);
+                                <div id="manageAppointment" class="tab-pane fade" >
+                                    <h3 class="headerTitle">Manage Appointment Duration</h3>
+                                    <hr>
+                                    <div class="row">
+                                        <div class="col-md-4">
 
-                                        if (dataReminder.size() > 0) {%>
-                                    <script>
-                                        //                                
-                                        $("#sendReminder").click();
-                                        $("#showMessage").html("System already send the appointment reminder");
 
-                                    </script> <%
-                                    } else {%>
-                                    <script>
+                                            <div class="col-md-12">
+                                                <label class="col-md-12" for="textinput">Health Facility</label>
+                                                <input class="form-control input-lg" type="text"  id="t_MANAGE_Appointment_HFC_NAME"   value="<%=hfc_name%>" readonly="">
+                                                <input class="form-control input-lg" type="hidden"  id="t_MANAGE_Appointment_HFC_CD"   value="<%=hfc%>" readonly="">
+                                            </div>
 
-                                        $("#sendReminder").hide();
-
-                                    </script> <%
-
-                                        }
-
-                                    %>
-
-                                    <p>Search Appointment Area:</p>                     
-                                    <div class='row' style="padding-bottom: 2%; padding-top: 2%; padding-left: 2%; background-color: #d9d9d9; margin-bottom: 4%">
-                                        <div class="col-md-3 col-sm-12 col-xs-12">
-                                            <form>
-                                                <div class="form-inline" >
-                                                    <div class="form-group">
-                                                        <!--<label>PMI No :</label>-->
-                                                        <input type="text" name="searchAppointmentDate"  id="searchAppointmentDate" class="form-control" placeholder="Search Appointment Date"/>
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <button class="btn btn-xs btn-success" id="searchDateView">Search</button>
-                                                    </div>
-                                                </div>
-                                            </form>
                                         </div>
-                                        <div class="col-md-3 col-sm-12 col-xs-12">
-                                            <form>
-                                                <div class="form-inline" >
-                                                    <div class="form-group">
-                                                        <!--<label>PMI No :</label>-->
-                                                        <input type="text" name="searchAppointmentPatient" id="searchAppointmentPatient"class="form-control" placeholder="Search Patient Name"/>
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <button class="btn btn-xs btn-success" id="searchPatientView" >Search</button>
-                                                    </div>
-                                                </div>
-                                            </form>
-                                        </div>
-                                        <div class="col-md-3 col-sm-12 col-xs-12">
-                                            <form method="post" name="myform" role="form" action="adminAppointmentSelectDoctor.jsp">
-                                                <div class="form-inline" >
-                                                    <div class="form-group">
-                                                        <!--<label>PMI No :</label>-->
-                                                        <input type="text" name="searchAppointmentDoctor"  id="searchAppointmentDoctor" class="form-control" placeholder="Search Doctor Name"/>
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <button class="btn btn-xs btn-success" id="searchDoctorView">Search</button>
-                                                    </div>
-                                                </div>
-                                            </form>
-                                        </div>
-                                        <div class="col-md-3 col-sm-12 col-xs-12">
+                                        <div class="col-md-4">
 
-                                            <button class="btn btn-info" id="viewAllAppointment">View All Appointment</button>
 
+                                            <div class="col-md-12">
+                                                <label class="col-md-12" for="textinput">Discipline</label>
+                                                <input class="form-control input-lg" type="text"  id="t_MANAGE_Appointment_DIS_NAME"   value="<%=discipline_name%>" readonly="">
+                                                <input class="form-control input-lg" type="hidden"  id="t_MANAGE_Appointment_DIS_CODE"   value="<%=discipline%>" readonly="">
+                                            </div>
+
+                                        </div>
+                                        <div class="col-md-4">
+
+                                            <div class="col-md-12">
+                                                <label class="col-md-12" for="textinput">Subdiscipline</label>
+                                                <input class="form-control input-lg" type="text"  id="t_MANAGE_Appointment_SUBDIS_NAME"  value="<%=subdiscipline_name%>" readonly="">
+                                                <input class="form-control input-lg" type="hidden"  id="t_MANAGE_Appointment_SUBDIS_CODE"  value="<%=subdiscipline%>" readonly="">
+                                            </div>
+
+                                            <div class="form-group" style="float: right; padding-right: 15px">
+                                                <!--                                                <button class="btn btn-primary" id="t_SEARCH_HFC_VIEW_Appointment" >Search</button>-->
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                    <hr>
+                                    
+                                    <div class="col-md-4">
+
+
+                                        <div class="col-md-12">
+                                            <label class="col-md-12" for="textinput">Start Time</label>
+                                            <input class="form-control input-lg" type="text"  id="t_MANAGE_Appointment_START_TIME" >
+                                           
+                                        </div>
+
+                                    </div>
+                                    <div class="col-md-4">
+
+
+                                        <div class="col-md-12">
+                                            <label class="col-md-12" for="textinput">END Time</label>
+                                            <input class="form-control input-lg" type="text"  id="t_MANAGE_Appointment_END_TIME" >
+                                           
+                                        </div>
+
+                                    </div>
+                                    <div class="col-md-4">
+
+                                        <div class="col-md-12">
+                                            <label class="col-md-12" for="textinput">Duration</label>
+                                            <input class="form-control input-lg" type="number"  id="t_MANAGE_Appointment_DURATION" >
+
+
+                                        </div>
+
+                                        <div class="form-group" style="float: right; padding-right: 15px">
+                                            <button class="btn btn-primary" id="btn_MANAGE_Appointment_DURATION_ADD" >ADD</button>
                                         </div>
                                     </div>
-                                    <p>Display Patient Appointment :</p>
-                                    <table class="table table-bordered table-hover" id="viewAppointment">
+                                     
+                                
+
+                                     <div id="div_VIEW_DURATION_APPOINMENT">
+                                         <table class="table table-bordered table-hover">
+                                             <thead>
+                                                 <tr>
+
+                                             <th><center>Start Time</center></th>
+                                             <th><center>Duration</center></th>
+                                             
+
+                                             </tr>
+                                             </thead>
+                                             <tbody>
+                                                 <%
+                                                     for (int i = 0; i < data_time_appointment.size(); i++) {
+                                                 %>
+                                                 <tr>
+                                                     <td id="start_time_appointment_duration"><%out.print(data_time_appointment.get(i).get(0));%></td>
+                                                     <td id="duration_appointment_duration"><%out.print(data_time_appointment.get(i).get(1));%></td>
+                                           
+                                                 </tr>
+
+                                                 <%
+                                                     }
+                                                 %>
+
+
+                                             </tbody>
+                                         </table>
+                                     </div>
+
+                            </div>
+                                            
+                            <div id="viewAppointment" class="tab-pane fade">
+                                <h3 class="headerTitle">View Patient Appointment</h3>
+                                <form method="post" name="myform" role="form" action="sendReminder.jsp">
+                                    <button id="sendReminder" class="btn btn-primary">Send Appointment Reminder</button>
+                                </form><br>
+                                <span id="showMessage" ></span>
+                                <%
+                                    String sqlReminder = "SELECT w.*,ld.Description AS state_name "
+                                            + "FROM adm_lookup_detail ld, "
+                                            + "(SELECT t.* "
+                                            + "FROM "
+                                            + "(SELECT pa.pmi_no, pa.hfc_cd, DATE(pa.appointment_date) AS appDate, TIME(pa.start_time) AS start_time, "
+                                            + "pb.MOBILE_PHONE, DATEDIFF(pa.appointment_date, NOW()) as DiffDate, pb.PATIENT_NAME, pb.EMAIL_ADDRESS "
+                                            + "FROM pms_appointment pa, pms_patient_biodata pb "
+                                            + "WHERE pa.pmi_no = pb.PMI_NO AND pa.status = 'active' AND remarks = 'pending' AND (DATEDIFF(pa.appointment_date, NOW())>1 ))t "
+                                            + "WHERE t.DiffDate<3)w "
+                                            + "WHERE w.hfc_cd = ld.Detail_Ref_code AND ld.Master_Ref_code = '0081'  AND w.hfc_cd= '" + hfc + "'";
+                                    ArrayList<ArrayList<String>> dataReminder = Conn.getData(sqlReminder);
+
+                                    if (dataReminder.size() > 0) {%>
+                                <script>
+                                    //                                
+                                    $("#sendReminder").click();
+                                    $("#showMessage").html("System already send the appointment reminder");
+
+                                </script> <%
+                                    } else {%>
+                                <script>
+
+                                    $("#sendReminder").hide();
+
+                                </script> <%
+
+                                    }
+
+                                %>
+
+                                <p>Search Appointment Area:</p>                     
+                                <div class='row' style="padding-bottom: 2%; padding-top: 2%; padding-left: 2%; background-color: #d9d9d9; margin-bottom: 4%">
+                                    <div class="col-md-3 col-sm-12 col-xs-12">
+                                        <form>
+                                            <div class="form-inline" >
+                                                <div class="form-group">
+                                                    <!--<label>PMI No :</label>-->
+                                                    <input type="text" name="searchAppointmentDate"  id="searchAppointmentDate" class="form-control" placeholder="Search Appointment Date"/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <button class="btn btn-xs btn-success" id="searchDateView">Search</button>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div class="col-md-3 col-sm-12 col-xs-12">
+                                        <form>
+                                            <div class="form-inline" >
+                                                <div class="form-group">
+                                                    <!--<label>PMI No :</label>-->
+                                                    <input type="text" name="searchAppointmentPatient" id="searchAppointmentPatient"class="form-control" placeholder="Search Patient Name"/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <button class="btn btn-xs btn-success" id="searchPatientView" >Search</button>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div class="col-md-3 col-sm-12 col-xs-12">
+                                        <form method="post" name="myform" role="form" action="adminAppointmentSelectDoctor.jsp">
+                                            <div class="form-inline" >
+                                                <div class="form-group">
+                                                    <!--<label>PMI No :</label>-->
+                                                    <input type="text" name="searchAppointmentDoctor"  id="searchAppointmentDoctor" class="form-control" placeholder="Search Doctor Name"/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <button class="btn btn-xs btn-success" id="searchDoctorView">Search</button>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div class="col-md-3 col-sm-12 col-xs-12">
+
+                                        <button class="btn btn-info" id="viewAllAppointment">View All Appointment</button>
+
+                                    </div>
+                                </div>
+                                <p>Display Patient Appointment :</p>
+                                <table class="table table-bordered table-hover" id="viewAppointment">
+                                    <thead>
+                                        <tr>
+                                            <th style="background-color : yellow;"></th>
+                                            <th>Canceled Appointment</th>
+                                            <th style="background-color : #8cff66;"></th>
+                                            <th>Upcoming Appointment</th>
+                                            <th style="background-color : red;"></th>
+                                            <th>Past Appointment</th>
+                                        </tr>
+                                    </thead>
+                                </table>
+                                <div class="table-responsive"  id="viewAppointmentTable">
+                                    <table class="table table-bordered table-hover" style="margin-bottom: 4%">
                                         <thead>
                                             <tr>
-                                                <th style="background-color : yellow;"></th>
-                                                <th>Canceled Appointment</th>
-                                                <th style="background-color : #8cff66;"></th>
-                                                <th>Upcoming Appointment</th>
-                                                <th style="background-color : red;"></th>
-                                                <th>Past Appointment</th>
-                                            </tr>
+                                                <th><center>No</center></th>
+                                        <th><center>Appointment Date</center></th>
+                                        <th><center>Appointment Time</center></th>
+                                        <th><center>PMI No</center></th>
+                                        <th><center>Patient Name</center></th>
+                                        <th><center>Doctor Name</center></th>
+                                        <th><center>Discipline</center></th>
+                                        <th><center>Subdicipline</center></th>
+                                        <th><center>Appointment Type</center></th>
+                                        <th><center>Action</center></th>
+                                        <th><center>Cancel Reason</center></th>               
+                                        </tr>
                                         </thead>
-                                    </table>
-                                    <div class="table-responsive"  id="viewAppointmentTable">
-                                        <table class="table table-bordered table-hover" style="margin-bottom: 4%">
-                                            <thead>
-                                                <tr>
-                                                    <th><center>No</center></th>
-                                            <th><center>Appointment Date</center></th>
-                                            <th><center>Appointment Time</center></th>
-                                            <th><center>PMI No</center></th>
-                                            <th><center>Patient Name</center></th>
-                                            <th><center>Doctor Name</center></th>
-                                            <th><center>Discipline</center></th>
-                                            <th><center>Subdicipline</center></th>
-                                            <th><center>Appointment Type</center></th>
-                                            <th><center>Action</center></th>
-                                            <th><center>Cancel Reason</center></th>               
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                                <%                                            if (dataAppointment.size() > 0) {
-                                                        for (int i = 0; i < dataAppointment.size(); i++) {
-                                                            Date today = new Date();
-                                                            String expectedPattern = "yyyy-MM-dd";
-                                                            SimpleDateFormat formatter = new SimpleDateFormat(expectedPattern);
-                                                            String appDateFromDB = dataAppointment.get(i).get(0);
-                                                            Date covertedAppDate = formatter.parse(appDateFromDB);
-                                                            //                                    String endLeaveDateFromDB = dataAppointment.get(i).get(1);
-                                                            //                                    Date endLeaveDate = formatter.parse(endLeaveDateFromDB);
+                                        <tbody>
+                                            <%                                            if (dataAppointment.size() > 0) {
+                                                    for (int i = 0; i < dataAppointment.size(); i++) {
+                                                        Date today = new Date();
+                                                        String expectedPattern = "yyyy-MM-dd";
+                                                        SimpleDateFormat formatter = new SimpleDateFormat(expectedPattern);
+                                                        String appDateFromDB = dataAppointment.get(i).get(0);
+                                                        Date covertedAppDate = formatter.parse(appDateFromDB);
+                                                        //                                    String endLeaveDateFromDB = dataAppointment.get(i).get(1);
+                                                        //                                    Date endLeaveDate = formatter.parse(endLeaveDateFromDB);
 
-                                                            SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy");
-                                                            String appointmentDate = DATE_FORMAT.format(covertedAppDate);
-                                                            //                                    String endLeave = DATE_FORMAT.format(endLeaveDate);
+                                                        SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy");
+                                                        String appointmentDate = DATE_FORMAT.format(covertedAppDate);
+                                                        //                                    String endLeave = DATE_FORMAT.format(endLeaveDate);
 
-                                                            //                                    String staffIDFromDB = dataStaffLeave.get(i).get(1);
+                                                        //                                    String staffIDFromDB = dataStaffLeave.get(i).get(1);
 
-                                                %>
-                                                <tr>
-                                                    <%                                                Date currentDate = new Date();
-                                                        String todayDate = DATE_FORMAT.format(currentDate);
-
-                                                        if ((covertedAppDate.after(currentDate) || appointmentDate.contentEquals(todayDate)) && dataAppointment.get(i).get(9).equals("active")) { %>
-                                                    <td class="incoming_date_area"><center><%out.print(i + 1);%></center></td>
-                                            <td class="incoming_date_area"><center><%=appointmentDate%></center></td>
-                                            <td class="incoming_date_area"><center><%=dataAppointment.get(i).get(1)%></center></td>
-                                            <td class="incoming_date_area"><center><%=dataAppointment.get(i).get(2)%></center></td>
-                                            <td class="incoming_date_area"><left><%=dataAppointment.get(i).get(3)%></left></td> 
-                                            <td class="incoming_date_area"><left><%=dataAppointment.get(i).get(4)%></left></td>
-                                            <td class="incoming_date_area"><center><%=dataAppointment.get(i).get(5)%></center></td>
-                                            <td class="incoming_date_area"><center><%=dataAppointment.get(i).get(6)%></center></td>
-                                            <td class="incoming_date_area"><center><%=dataAppointment.get(i).get(7)%></center></td>
-                                            <td class="incoming_date_area">
-                                            <center>
-                                                <button class="btn btn-xs btn-primary" onClick="return myFunction('<%=dataAppointment.get(i).get(2)%>', '<%=hfc%>', '<%=dataAppointment.get(i).get(0)%>')">Cancel</button>
-
-                                            </center>
-                                            </td>
-                                            <td class="incoming_date_area"><center></center></td>
-                                                <%
-                                                } else if ((covertedAppDate.after(currentDate) || appointmentDate.contentEquals(todayDate)) && dataAppointment.get(i).get(9).equals("canceled")) {%>
-                                            <td style="background-color : yellow"><center><%out.print(i + 1);%></center></td>
-                                            <td><center><%=appointmentDate%></center></td>
-                                            <td><center><%=dataAppointment.get(i).get(1)%></center></td>
-                                            <td><center><%=dataAppointment.get(i).get(2)%></center></td>
-                                            <td><left><%=dataAppointment.get(i).get(3)%></left></td> 
-                                            <td><left><%=dataAppointment.get(i).get(4)%></left></td>
-                                            <td><center><%=dataAppointment.get(i).get(5)%></center></td>
-                                            <td><center><%=dataAppointment.get(i).get(6)%></center></td>
-                                            <td><center><%=dataAppointment.get(i).get(7)%></center></td>
-                                            <td>
-                                            <center>
-                                                <button disabled="disabled" class="btn btn-xs btn-primary">Cancel</button>
-                                            </center>
-                                            </td> 
-                                            <td><center><%=dataAppointment.get(i).get(10)%></center></td>
-
-                                            <%
-                                            } else {
                                             %>
-                                            <td style="background-color:red"><center><%out.print(i + 1);%></center></td>
-                                            <td><center><%=appointmentDate%></center></td>
-                                            <td><center><%=dataAppointment.get(i).get(1)%></center></td>
-                                            <td><center><%=dataAppointment.get(i).get(2)%></center></td>
-                                            <td><left><%=dataAppointment.get(i).get(3)%></left></td> 
-                                            <td><left><%=dataAppointment.get(i).get(4)%></left></td>
-                                            <td><center><%=dataAppointment.get(i).get(5)%></center></td>
-                                            <td><center><%=dataAppointment.get(i).get(6)%></center></td>
-                                            <td><center><%=dataAppointment.get(i).get(7)%></center></td>
-                                            <!--<td><center><%=dataAppointment.get(i).get(9)%></center></td>-->
-                                            <td>
-                                            <center>
-                                                <button disabled="disabled" class="btn btn-xs btn-primary" >Cancel</button>
-                                            </center>
-                                            <td><center>Not Applicable</center></td>
-                                                <%
-                                                    }
-                                                %>
+                                            <tr>
+                                                <%                                                Date currentDate = new Date();
+                                                    String todayDate = DATE_FORMAT.format(currentDate);
 
-                                            </tr>
+                                                    if ((covertedAppDate.after(currentDate) || appointmentDate.contentEquals(todayDate)) && dataAppointment.get(i).get(9).equals("active")) { %>
+                                                <td class="incoming_date_area"><center><%out.print(i + 1);%></center></td>
+                                        <td class="incoming_date_area"><center><%=appointmentDate%></center></td>
+                                        <td class="incoming_date_area"><center><%=dataAppointment.get(i).get(1)%></center></td>
+                                        <td class="incoming_date_area"><center><%=dataAppointment.get(i).get(2)%></center></td>
+                                        <td class="incoming_date_area"><left><%=dataAppointment.get(i).get(3)%></left></td> 
+                                        <td class="incoming_date_area"><left><%=dataAppointment.get(i).get(4)%></left></td>
+                                        <td class="incoming_date_area"><center><%=dataAppointment.get(i).get(5)%></center></td>
+                                        <td class="incoming_date_area"><center><%=dataAppointment.get(i).get(6)%></center></td>
+                                        <td class="incoming_date_area"><center><%=dataAppointment.get(i).get(7)%></center></td>
+                                        <td class="incoming_date_area">
+                                        <center>
+                                            <button class="btn btn-xs btn-primary" onClick="return myFunction('<%=dataAppointment.get(i).get(2)%>', '<%=hfc%>', '<%=dataAppointment.get(i).get(0)%>')">Cancel</button>
+
+                                        </center>
+                                        </td>
+                                        <td class="incoming_date_area"><center></center></td>
                                             <%
-                                                        if (covertedAppDate.before(today)) {
-                                                            RMIConnector rmic = new RMIConnector();
-                                                            String sqlInsert = "UPDATE pms_appointment SET status='inactive' WHERE appointment_date < date(now());";
+                                                } else if ((covertedAppDate.after(currentDate) || appointmentDate.contentEquals(todayDate)) && dataAppointment.get(i).get(9).equals("canceled")) {%>
+                                        <td style="background-color : yellow"><center><%out.print(i + 1);%></center></td>
+                                        <td><center><%=appointmentDate%></center></td>
+                                        <td><center><%=dataAppointment.get(i).get(1)%></center></td>
+                                        <td><center><%=dataAppointment.get(i).get(2)%></center></td>
+                                        <td><left><%=dataAppointment.get(i).get(3)%></left></td> 
+                                        <td><left><%=dataAppointment.get(i).get(4)%></left></td>
+                                        <td><center><%=dataAppointment.get(i).get(5)%></center></td>
+                                        <td><center><%=dataAppointment.get(i).get(6)%></center></td>
+                                        <td><center><%=dataAppointment.get(i).get(7)%></center></td>
+                                        <td>
+                                        <center>
+                                            <button disabled="disabled" class="btn btn-xs btn-primary">Cancel</button>
+                                        </center>
+                                        </td> 
+                                        <td><center><%=dataAppointment.get(i).get(10)%></center></td>
 
-                                                            boolean isInsert = rmic.setQuerySQL(Conn.HOST, Conn.PORT, sqlInsert);
-                                                        }
-                                                    }
+                                        <%
+                                        } else {
+                                        %>
+                                        <td style="background-color:red"><center><%out.print(i + 1);%></center></td>
+                                        <td><center><%=appointmentDate%></center></td>
+                                        <td><center><%=dataAppointment.get(i).get(1)%></center></td>
+                                        <td><center><%=dataAppointment.get(i).get(2)%></center></td>
+                                        <td><left><%=dataAppointment.get(i).get(3)%></left></td> 
+                                        <td><left><%=dataAppointment.get(i).get(4)%></left></td>
+                                        <td><center><%=dataAppointment.get(i).get(5)%></center></td>
+                                        <td><center><%=dataAppointment.get(i).get(6)%></center></td>
+                                        <td><center><%=dataAppointment.get(i).get(7)%></center></td>
+                                        <!--<td><center><%=dataAppointment.get(i).get(9)%></center></td>-->
+                                        <td>
+                                        <center>
+                                            <button disabled="disabled" class="btn btn-xs btn-primary" >Cancel</button>
+                                        </center>
+                                        <td><center>Not Applicable</center></td>
+                                            <%
                                                 }
                                             %>
-                                            </tbody>
-                                        </table>
-                                    </div>
+
+                                        </tr>
+                                        <%
+                                                    if (covertedAppDate.before(today)) {
+                                                        RMIConnector rmic = new RMIConnector();
+                                                        String sqlInsert = "UPDATE pms_appointment SET status='inactive' WHERE appointment_date < date(now());";
+
+                                                        boolean isInsert = rmic.setQuerySQL(Conn.HOST, Conn.PORT, sqlInsert);
+                                                    }
+                                                }
+                                            }
+                                        %>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-md-12 col-sm-12 col-xs-12 footer " >
-                        Copyright &copy; BIOCORE 2016
-                    </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12 col-sm-12 col-xs-12 footer " >
+                    Copyright &copy; BIOCORE 2016
                 </div>
             </div>
-
         </div>
-        <!-- main -->
 
-        <jsp:include page="calender/AppointmentAdd.jsp"/>
-        <jsp:include page="calender/AppointmentView.jsp"/>
+    </div>
+    <!-- main -->
 
-        <script src="<%=Config.getBase_url(request)%>jsfile/MakeAppointment.js"></script>             
-        <script src="<%=Config.getBase_url(request)%>jsfile/ViewHoliday.js"></script> 
-        <script src="<%=Config.getBase_url(request)%>jsfile/SearchPatient.js"></script>       
-        <script src="<%=Config.getBase_url(request)%>jsfile/ApplyLeave.js"></script>    
-        <script src="<%=Config.getBase_url(request)%>jsfile/ViewAppointment.js"></script> 
-        <script src="<%=Config.getBase_url(request)%>jsfile/CancelAppointment.js"></script>
-        <script src="<%=Config.getBase_url(request)%>jsfile/DoctorAvaibility.js"></script>
+    <jsp:include page="calender/AppointmentAdd.jsp"/>
+    <jsp:include page="calender/AppointmentView.jsp"/>
+ 
 
-        <script type="text/javascript">
+    <script src="<%=Config.getBase_url(request)%>jsfile/MakeAppointment.js"></script>             
+    <script src="<%=Config.getBase_url(request)%>jsfile/ViewHoliday.js"></script> 
+    <script src="<%=Config.getBase_url(request)%>jsfile/SearchPatient.js"></script>       
+    <script src="<%=Config.getBase_url(request)%>jsfile/ApplyLeave.js"></script>    
+    <script src="<%=Config.getBase_url(request)%>jsfile/ViewAppointment.js"></script> 
+    <script src="<%=Config.getBase_url(request)%>jsfile/CancelAppointment.js"></script>
+    <script src="<%=Config.getBase_url(request)%>jsfile/DoctorAvaibility.js"></script>
+    <script src="<%=Config.getBase_url(request)%>jsfile/ManageAppointmentDuration.js"></script>
 
-                                                    function holidayEmptyField() {
-                                                        $('#state').val('');
-                                                        $('#startdate').val('');
-                                                        $('#desc').val('');
-                                                        $('#appTo').val('');
-                                                    }
+    <script type="text/javascript">
 
-                                                    function selectHFC(data) {
+                                                function holidayEmptyField() {
+                                                    $('#state').val('');
+                                                    $('#startdate').val('');
+                                                    $('#desc').val('');
+                                                    $('#appTo').val('');
+                                                }
+
+                                                function selectHFC(data) {
+                                                    $.ajax({
+                                                        url: 'adminGetUpdateHFC.jsp',
+                                                        method: 'post',
+                                                        timeout: 10000,
+                                                        data: data,
+                                                        success: function (result) {
+                                                            document.getElementById("hfc_codeC").innerHTML = result;
+                                                            console.log($('#hfc_codeC').val());
+                                                        },
+                                                        error: function (err) {
+                                                            console.log("d");
+                                                        }
+                                                    });
+                                                }
+
+                                                $(document).ready(function () {
+                                                    
+                                                    $('#startTimeRoster').ptTimeSelect();
+                                                    $('#endTimeRoster').ptTimeSelect();
+
+                                                    $('#startdateC').ptTimeSelect();
+                                                    $('#enddateC').ptTimeSelect();
+
+                                                    $('#updateBtn').prop('disabled', true);
+                                                    $('#updateClinicDay').prop('disabled', true);
+                                                    $('#updateRoster').prop('disabled', true);
+
+                                                    $(function () {
+                                                        $('#startdate').datepicker({dateFormat: 'dd/mm/yy'});
+                                                    });
+
+                                                    $(function () {
+                                                        $('#datepicker').datepicker({dateFormat: 'dd/mm/yy'});
+                                                    });
+
+                                                    $(function () {
+                                                        $('#startDateRoster').datepicker({dateFormat: 'dd/mm/yy'});
+                                                    });
+
+                                                    $(function () {
+                                                        $('#endDateRoster').datepicker({dateFormat: 'dd/mm/yy'});
+                                                    });
+
+                                                    $(function () {
+                                                        $('#dateDoctorA').datepicker({dateFormat: 'dd/mm/yy'});
+                                                    });
+
+                                                    $(function () {
+                                                        $('#startDateLeave').datepicker({dateFormat: 'dd/mm/yy'});
+                                                    });
+
+                                                    $(function () {
+                                                        $('#endDateLeave').datepicker({dateFormat: 'dd/mm/yy'});
+                                                    });
+
+                                                    $(function () {
+                                                        $('#searchAppointmentDate').datepicker({dateFormat: 'dd/mm/yy'});
+                                                    });
+
+
+                                                    $('#maintainStaffLeave').on('click', '.notApprove-leave', function (e) {
+                                                        e.preventDefault();
+                                                        var idBtn = $(this).get(0).id;
+                                                        idBtn = idBtn.split("|");
+                                                        var dataStaffLeave = $('#dataStaffLeave' + idBtn[1]).val();
+                                                        dataStaffLeave = dataStaffLeave.split("|");
+                                                        var dataStaffAjax = {
+                                                            hfcCode: dataStaffLeave[0],
+                                                            userId: dataStaffLeave[1],
+                                                            leaveDate: dataStaffLeave[2]
+                                                        };
+                                                        console.log(dataStaffAjax);
                                                         $.ajax({
-                                                            url: 'adminGetUpdateHFC.jsp',
+                                                            url: 'updateLeaveNotApprove.jsp',
                                                             method: 'post',
+                                                            data: dataStaffAjax,
                                                             timeout: 10000,
-                                                            data: data,
                                                             success: function (result) {
-                                                                document.getElementById("hfc_codeC").innerHTML = result;
-                                                                console.log($('#hfc_codeC').val());
+                                                                if (result.trim() === 'success') {
+                                                                    $('#maintainStaffLeave').load('adminAppointmentAjax.jsp #maintainStaffLeave');
+                                                                    alert('Successfully disapproved this staff leave application');
+                                                                } else if (result.trim() === 'notallow') {
+                                                                    alert('You are not allow to disapprove leave for yourself as you are admin. Please ask other admin to do so');
+                                                                } else if (result.trim() === 'nodata') {
+                                                                    alert('Data not exist');
+                                                                } else {
+                                                                    alert('error ajax');
+                                                                }
+                                                                console.log(result);
                                                             },
                                                             error: function (err) {
-                                                                console.log("d");
+                                                                console.log(err);
                                                             }
                                                         });
-                                                    }
+                                                    });
 
-                                                    $(document).ready(function () {
-                                                        $('#startTimeRoster').ptTimeSelect();
-                                                        $('#endTimeRoster').ptTimeSelect();
+                                                    $('#cancelLeave').click(function (e) {
+                                                        e.preventDefault();
+                                                        $('#startDateLeave').val('');
+                                                        $('#endDateLeave').val('');
+                                                        $('#descLeave').val('');
+                                                    });
 
-                                                        $('#startdateC').ptTimeSelect();
-                                                        $('#enddateC').ptTimeSelect();
+                                                    $('#maintainStaffLeave').on('click', '.approve-leave', function (e) {
+                                                        e.preventDefault();
+                                                        var idbtn = $(this).get(0).id;
+                                                        idbtn = idbtn.split('|');
 
-                                                        $('#updateBtn').prop('disabled', true);
-                                                        $('#updateClinicDay').prop('disabled', true);
+                                                        var dataStaffLeave = $('#dataStaffLeave' + idbtn[1]).val();
+                                                        dataStaffLeave = dataStaffLeave.split('|');
+
+                                                        var dataLeaveAjax = {
+                                                            hfcCode: dataStaffLeave[0],
+                                                            userId: dataStaffLeave[1],
+                                                            dateLeave: dataStaffLeave[2]
+                                                        };
+                                                        $.ajax({
+                                                            url: 'updateLeaveApprove.jsp',
+                                                            method: 'post',
+                                                            data: dataLeaveAjax,
+                                                            timeout: 10000,
+                                                            success: function (result) {
+                                                                if (result.trim() === 'success') {
+                                                                    alert('Successfully approved this staff leave application');
+                                                                    $('#maintainStaffLeave').load('adminAppointmentAjax.jsp #maintainStaffLeave');
+                                                                } else if (result.trim() === 'nodata') {
+                                                                    alert('data not exist');
+                                                                } else if (result.trim() === 'notallow') {
+                                                                    alert('You are not allow to approve leave for yourself as you are admin. Please ask other admin to do so');
+                                                                } else {
+                                                                    alert('err');
+                                                                    console.log(result.trim());
+                                                                }
+                                                            },
+                                                            error: function (error) {
+                                                                console.log(error);
+                                                            }
+                                                        });
+
+                                                    });
+
+
+
+                                                    $('#cancelRoster').click(function (e) {
+                                                        e.preventDefault();
                                                         $('#updateRoster').prop('disabled', true);
+                                                        $('#addRoster').prop('disabled', false);
+                                                        $('#staffIDRoster').val('');
+                                                        $('#userIDBefore').val('');
+                                                        $('#roster_category').val('');
+                                                        $('#startDateBeforeRoster').val('');
+                                                        $('#startDateRoster').val('');
+                                                        $('#endDateRoster').val('');
+                                                        $('#startTimeRoster').val('');
+                                                        $('#endTimeRoster').val('');
+                                                        $('#statusRoster').val('');
+                                                    });
 
-                                                        $(function () {
-                                                            $('#startdate').datepicker({dateFormat: 'dd/mm/yy'});
-                                                        });
+                                                    $('#updateRoster').click(function (e) {
+                                                        e.preventDefault(e);
 
-                                                        $(function () {
-                                                            $('#datepicker').datepicker({dateFormat: 'dd/mm/yy'});
-                                                        });
+                                                        var starttimeRoster = ConvertTimeformat('24', $('#startTimeRoster').val());
+                                                        var endtimeRoster = ConvertTimeformat('24', $('#endTimeRoster').val());
 
-                                                        $(function () {
-                                                            $('#startDateRoster').datepicker({dateFormat: 'dd/mm/yy'});
-                                                        });
-
-                                                        $(function () {
-                                                            $('#endDateRoster').datepicker({dateFormat: 'dd/mm/yy'});
-                                                        });
-
-                                                        $(function () {
-                                                            $('#dateDoctorA').datepicker({dateFormat: 'dd/mm/yy'});
-                                                        });
-
-                                                        $(function () {
-                                                            $('#startDateLeave').datepicker({dateFormat: 'dd/mm/yy'});
-                                                        });
-
-                                                        $(function () {
-                                                            $('#endDateLeave').datepicker({dateFormat: 'dd/mm/yy'});
-                                                        });
-
-                                                        $(function () {
-                                                            $('#searchAppointmentDate').datepicker({dateFormat: 'dd/mm/yy'});
-                                                        });
+                                                        var startDate = changeDateFormat($('#startDateRoster').val());
+                                                        var endDate = changeDateFormat($('#endDateRoster').val());
+                                                        var startDateBefore = changeDateFormat($('#startDateBeforeRoster').val());
 
 
-                                                        $('#maintainStaffLeave').on('click', '.notApprove-leave', function (e) {
-                                                            e.preventDefault();
-                                                            var idBtn = $(this).get(0).id;
-                                                            idBtn = idBtn.split("|");
-                                                            var dataStaffLeave = $('#dataStaffLeave' + idBtn[1]).val();
-                                                            dataStaffLeave = dataStaffLeave.split("|");
-                                                            var dataStaffAjax = {
-                                                                hfcCode: dataStaffLeave[0],
-                                                                userId: dataStaffLeave[1],
-                                                                leaveDate: dataStaffLeave[2]
-                                                            };
-                                                            console.log(dataStaffAjax);
-                                                            $.ajax({
-                                                                url: 'updateLeaveNotApprove.jsp',
-                                                                method: 'post',
-                                                                data: dataStaffAjax,
-                                                                timeout: 10000,
-                                                                success: function (result) {
-                                                                    if (result.trim() === 'success') {
-                                                                        $('#maintainStaffLeave').load('adminAppointmentAjax.jsp #maintainStaffLeave');
-                                                                        alert('Successfully disapproved this staff leave application');
-                                                                    } else if (result.trim() === 'notallow') {
-                                                                        alert('You are not allow to disapprove leave for yourself as you are admin. Please ask other admin to do so');
-                                                                    } else if (result.trim() === 'nodata') {
-                                                                        alert('Data not exist');
-                                                                    } else {
-                                                                        alert('error ajax');
-                                                                    }
-                                                                    console.log(result);
-                                                                },
-                                                                error: function (err) {
-                                                                    console.log(err);
+                                                        var dataURoster = {
+                                                            hfcCode: $('#hfcRoster').val(),
+                                                            staffId: $('#staffIDRoster').val(),
+                                                            userIdBefore: $('#userIDBefore').val(),
+                                                            roster_category: $('#roster_category').val(),
+                                                            startDateBefore: startDateBefore,
+                                                            startDate: startDate,
+                                                            endDate: endDate,
+                                                            startTime: starttimeRoster,
+                                                            endTime: endtimeRoster,
+                                                            status: $('#statusRoster').val()
+                                                        };
+                                                        console.log(dataURoster);
+
+                                                        $.ajax({
+                                                            url: 'updateRosterAjax.jsp',
+                                                            method: 'post',
+                                                            data: dataURoster,
+                                                            timeout: 10000,
+                                                            success: function (result) {
+                                                                console.log(result);
+                                                                if (result.trim() === 'success') {
+                                                                    alert('Update roster successful');
+                                                                    $('#rosterTable').load('adminAppointmentAjax.jsp #rosterTable');
+                                                                } else {
+                                                                    alert('Update roster fail due to the roster data does not exist');
                                                                 }
-                                                            });
+                                                            },
+                                                            error: function (error) {
+                                                                console.log(error);
+                                                            }
                                                         });
+                                                    });
 
-                                                        $('#cancelLeave').click(function (e) {
-                                                            e.preventDefault();
-                                                            $('#startDateLeave').val('');
-                                                            $('#endDateLeave').val('');
-                                                            $('#descLeave').val('');
-                                                        });
+                                                    $('#rosterTable').on('click', '.roster-editBtn', function (e) {
+                                                        e.preventDefault();
+                                                        $('#updateRoster').prop('disabled', false);
+                                                        $('#addRoster').prop('disabled', true);
+                                                        $('html,body').animate({
+                                                            scrollTop: $("#maintainroster").offset().top
+                                                        }, 500);
 
-                                                        $('#maintainStaffLeave').on('click', '.approve-leave', function (e) {
-                                                            e.preventDefault();
-                                                            var idbtn = $(this).get(0).id;
-                                                            idbtn = idbtn.split('|');
+                                                        var idName = $(this).get(0).id;
+                                                        var id = idName.split("|");
+                                                        var dataRoster = $('#rosterData' + id[1]).val();
+                                                        var dataRArry = dataRoster.split("|");
 
-                                                            var dataStaffLeave = $('#dataStaffLeave' + idbtn[1]).val();
-                                                            dataStaffLeave = dataStaffLeave.split('|');
+                                                        console.log(dataRArry);
 
-                                                            var dataLeaveAjax = {
-                                                                hfcCode: dataStaffLeave[0],
-                                                                userId: dataStaffLeave[1],
-                                                                dateLeave: dataStaffLeave[2]
-                                                            };
-                                                            $.ajax({
-                                                                url: 'updateLeaveApprove.jsp',
-                                                                method: 'post',
-                                                                data: dataLeaveAjax,
-                                                                timeout: 10000,
-                                                                success: function (result) {
-                                                                    if (result.trim() === 'success') {
-                                                                        alert('Successfully approved this staff leave application');
-                                                                        $('#maintainStaffLeave').load('adminAppointmentAjax.jsp #maintainStaffLeave');
-                                                                    } else if (result.trim() === 'nodata') {
-                                                                        alert('data not exist');
-                                                                    } else if (result.trim() === 'notallow') {
-                                                                        alert('You are not allow to approve leave for yourself as you are admin. Please ask other admin to do so');
-                                                                    } else {
-                                                                        alert('err');
-                                                                        console.log(result.trim());
-                                                                    }
-                                                                },
-                                                                error: function (error) {
-                                                                    console.log(error);
+
+                                                        var starttimeRoster = ConvertTimeformat12('12', dataRArry[3]);
+                                                        var endtimeRoster = ConvertTimeformat12('12', dataRArry[4]);
+
+                                                        $('#staffIDRoster').val(dataRArry[0].trim());
+                                                        $('#userIDBefore').val(dataRArry[0].trim());
+                                                        $('#roster_category').val(dataRArry[5]);
+                                                        $('#startDateRoster').val(dataRArry[1]);
+                                                        $('#startDateBeforeRoster').val(dataRArry[1]);
+                                                        $('#endDateRoster').val(dataRArry[2]);
+                                                        $('#startTimeRoster').val(starttimeRoster);
+                                                        $('#endTimeRoster').val(endtimeRoster);
+                                                        $('#statusRoster').val(dataRArry[6]);
+
+                                                    });
+
+                                                    $('#addRoster').click(function (e) {
+                                                        e.preventDefault();
+
+                                                        var startDateRoster = $('#startDateRoster').val().split('/');
+                                                        var endDateRoster = $('#endDateRoster').val().split('/');
+                                                        startDateRoster = startDateRoster[2] + '-' + startDateRoster[1] + '-' + startDateRoster[0];
+                                                        endDateRoster = endDateRoster[2] + '-' + endDateRoster[1] + '-' + endDateRoster[0];
+
+                                                        var starttimeRoster = ConvertTimeformat('24', $('#startTimeRoster').val());
+                                                        var endtimeRoster = ConvertTimeformat('24', $('#endTimeRoster').val());
+
+                                                        var dataRoster = {
+                                                            hfcRoster: $('#hfcRoster').val(),
+                                                            staffIDRoster: $('#staffIDRoster').val(),
+                                                            roster_category: $('#roster_category').val(),
+                                                            startDateRoster: startDateRoster,
+                                                            endDateRoster: endDateRoster,
+                                                            startTimeRoster: starttimeRoster,
+                                                            endTimeRoster: endtimeRoster,
+                                                            statusRoster: $('#statusRoster').val()
+                                                        };
+
+                                                        console.log(dataRoster);
+                                                        $.ajax({
+                                                            url: 'addRosterAjax.jsp',
+                                                            method: 'post',
+                                                            timeout: 10000,
+                                                            data: dataRoster,
+                                                            success: function (result) {
+                                                                console.log(result);
+                                                                if (result.trim() === 'fail') {
+                                                                    alert('Fail to add staff roster due to the roster period still active');
+                                                                } else if (result.trim() === 'success') {
+                                                                    alert('Insert Roster Successful');
+                                                                    $('#rosterTable').load('adminAppointmentAjax.jsp #rosterTable');
+                                                                    $('#staffIDRoster').val('');
+                                                                    $('#userIDBefore').val('');
+                                                                    $('#roster_category').val('');
+                                                                    $('#startDateBeforeRoster').val('');
+                                                                    $('#startDateRoster').val('');
+                                                                    $('#endDateRoster').val('');
+                                                                    $('#startTimeRoster').val('');
+                                                                    $('#endTimeRoster').val('');
+                                                                    $('#statusRoster').val('');
+                                                                } else {
+                                                                    alert('error on ajax');
                                                                 }
-                                                            });
-
+                                                            },
+                                                            error: function (err) {
+                                                                console.log(err);
+                                                            }
                                                         });
+                                                    });
 
+                                                    $('#cancelClinicDay').click(function (e) {
+                                                        e.preventDefault();
+                                                        $('#updateClinicDay').prop('disabled', true);
+                                                        $('#addClinicDay').prop('disabled', false);
 
+                                                        $('#state_').val('');
+                                                        $('#hfc_codeC').val('');
+                                                        $('#hfcBefore').val('');
+                                                        $('#discipline').val('');
+                                                        $('#disciplineBefore').val('');
+                                                        $('#subdisciplineBefore').val('');
+                                                        $('#subdiscipline').val('');
+                                                        $('#clinicDay').val('');
+                                                        $('#dayBefore').val('');
+                                                        $('#startdateC').val('');
+                                                        $('#enddateC').val('');
+                                                        $('#status').val('');
+                                                    });
 
-                                                        $('#cancelRoster').click(function (e) {
-                                                            e.preventDefault();
-                                                            $('#updateRoster').prop('disabled', true);
-                                                            $('#addRoster').prop('disabled', false);
-                                                            $('#staffIDRoster').val('');
-                                                            $('#userIDBefore').val('');
-                                                            $('#roster_category').val('');
-                                                            $('#startDateBeforeRoster').val('');
-                                                            $('#startDateRoster').val('');
-                                                            $('#endDateRoster').val('');
-                                                            $('#startTimeRoster').val('');
-                                                            $('#endTimeRoster').val('');
-                                                            $('#statusRoster').val('');
-                                                        });
+                                                    $('#updateClinicDay').click(function (e) {
+                                                        e.preventDefault();
+                                                        var starttimeClinic = ConvertTimeformat('24', $('#startdateC').val());
+                                                        var endtimeClinic = ConvertTimeformat('24', $('#enddateC').val());
 
-                                                        $('#updateRoster').click(function (e) {
-                                                            e.preventDefault(e);
+                                                        var _state = $('#state_').val();
+                                                        var _hfc = $('#hfc_codeC').val();
+                                                        var _hfcBefore = $('#hfcBefore').val();
+                                                        var _discipline = $('#discipline').val();
+                                                        var _disBefore = $('#disciplineBefore').val();
+                                                        var _subdisBefore = $('#subdisciplineBefore').val();
+                                                        var _subdiscipline = $('#subdiscipline').val();
+                                                        var _clinicDay = $('#clinicDay').val();
+                                                        var _dayBefore = $('#dayBefore').val();
+                                                        var _starttime = starttimeClinic;
+                                                        var _endtime = endtimeClinic;
+                                                        var _status = $('#status').val();
 
-                                                            var starttimeRoster = ConvertTimeformat('24', $('#startTimeRoster').val());
-                                                            var endtimeRoster = ConvertTimeformat('24', $('#endTimeRoster').val());
+                                                        var uClinicData = {
+                                                            state: _state,
+                                                            hfcCode: _hfc,
+                                                            hfcBefore: _hfcBefore,
+                                                            discipline: _discipline,
+                                                            disciplineBefore: _disBefore,
+                                                            subdiscipline: _subdiscipline,
+                                                            subdisciplineBefore: _subdisBefore,
+                                                            clinicDay: _clinicDay,
+                                                            starttime: _starttime,
+                                                            endtime: _endtime,
+                                                            daybefore: _dayBefore,
+                                                            status: _status
+                                                        };
 
-                                                            var startDate = changeDateFormat($('#startDateRoster').val());
-                                                            var endDate = changeDateFormat($('#endDateRoster').val());
-                                                            var startDateBefore = changeDateFormat($('#startDateBeforeRoster').val());
-
-
-                                                            var dataURoster = {
-                                                                hfcCode: $('#hfcRoster').val(),
-                                                                staffId: $('#staffIDRoster').val(),
-                                                                userIdBefore: $('#userIDBefore').val(),
-                                                                roster_category: $('#roster_category').val(),
-                                                                startDateBefore: startDateBefore,
-                                                                startDate: startDate,
-                                                                endDate: endDate,
-                                                                startTime: starttimeRoster,
-                                                                endTime: endtimeRoster,
-                                                                status: $('#statusRoster').val()
-                                                            };
-                                                            console.log(dataURoster);
-
-                                                            $.ajax({
-                                                                url: 'updateRosterAjax.jsp',
-                                                                method: 'post',
-                                                                data: dataURoster,
-                                                                timeout: 10000,
-                                                                success: function (result) {
-                                                                    console.log(result);
-                                                                    if (result.trim() === 'success') {
-                                                                        alert('Update roster successful');
-                                                                        $('#rosterTable').load('adminAppointmentAjax.jsp #rosterTable');
-                                                                    } else {
-                                                                        alert('Update roster fail due to the roster data does not exist');
-                                                                    }
-                                                                },
-                                                                error: function (error) {
-                                                                    console.log(error);
+                                                        $.ajax({
+                                                            url: 'updateClinicDayAjax.jsp',
+                                                            method: 'post',
+                                                            data: uClinicData,
+                                                            timeout: 10000,
+                                                            success: function (result) {
+                                                                console.log(result);
+                                                                if (result.trim() === 'success') {
+                                                                    alert('Clinic day updated');
+                                                                    $('#clinicDayTable').load('adminAppointmentAjax.jsp #clinicDayTable');
+                                                                } else {
+                                                                    alert('Error');
                                                                 }
-                                                            });
+                                                            }
                                                         });
+                                                        console.log(uClinicData);
+                                                    });
 
-                                                        $('#rosterTable').on('click', '.roster-editBtn', function (e) {
-                                                            e.preventDefault();
-                                                            $('#updateRoster').prop('disabled', false);
-                                                            $('#addRoster').prop('disabled', true);
-                                                            $('html,body').animate({
-                                                                scrollTop: $("#maintainroster").offset().top
-                                                            }, 500);
+                                                    $('#clinicDayTable').on('click', '.clinic-editBtn', function (e) {
 
-                                                            var idName = $(this).get(0).id;
-                                                            var id = idName.split("|");
-                                                            var dataRoster = $('#rosterData' + id[1]).val();
-                                                            var dataRArry = dataRoster.split("|");
+                                                        e.preventDefault();
+                                                        $('#updateClinicDay').prop('disabled', false);
+                                                        $('#addClinicDay').prop('disabled', true);
 
-                                                            console.log(dataRArry);
+                                                        $('html,body').animate({
+                                                            scrollTop: $("#maintainclinicday").offset().top
+                                                        }, 500);
 
-
-                                                            var starttimeRoster = ConvertTimeformat12('12', dataRArry[3]);
-                                                            var endtimeRoster = ConvertTimeformat12('12', dataRArry[4]);
-
-                                                            $('#staffIDRoster').val(dataRArry[0].trim());
-                                                            $('#userIDBefore').val(dataRArry[0].trim());
-                                                            $('#roster_category').val(dataRArry[5]);
-                                                            $('#startDateRoster').val(dataRArry[1]);
-                                                            $('#startDateBeforeRoster').val(dataRArry[1]);
-                                                            $('#endDateRoster').val(dataRArry[2]);
-                                                            $('#startTimeRoster').val(starttimeRoster);
-                                                            $('#endTimeRoster').val(endtimeRoster);
-                                                            $('#statusRoster').val(dataRArry[6]);
-
-                                                        });
-
-                                                        $('#addRoster').click(function (e) {
-                                                            e.preventDefault();
-
-                                                            var startDateRoster = $('#startDateRoster').val().split('/');
-                                                            var endDateRoster = $('#endDateRoster').val().split('/');
-                                                            startDateRoster = startDateRoster[2] + '-' + startDateRoster[1] + '-' + startDateRoster[0];
-                                                            endDateRoster = endDateRoster[2] + '-' + endDateRoster[1] + '-' + endDateRoster[0];
-
-                                                            var starttimeRoster = ConvertTimeformat('24', $('#startTimeRoster').val());
-                                                            var endtimeRoster = ConvertTimeformat('24', $('#endTimeRoster').val());
-
-                                                            var dataRoster = {
-                                                                hfcRoster: $('#hfcRoster').val(),
-                                                                staffIDRoster: $('#staffIDRoster').val(),
-                                                                roster_category: $('#roster_category').val(),
-                                                                startDateRoster: startDateRoster,
-                                                                endDateRoster: endDateRoster,
-                                                                startTimeRoster: starttimeRoster,
-                                                                endTimeRoster: endtimeRoster,
-                                                                statusRoster: $('#statusRoster').val()
-                                                            };
-
-                                                            console.log(dataRoster);
-                                                            $.ajax({
-                                                                url: 'addRosterAjax.jsp',
-                                                                method: 'post',
-                                                                timeout: 10000,
-                                                                data: dataRoster,
-                                                                success: function (result) {
-                                                                    console.log(result);
-                                                                    if (result.trim() === 'fail') {
-                                                                        alert('Fail to add staff roster due to the roster period still active');
-                                                                    } else if (result.trim() === 'success') {
-                                                                        alert('Insert Roster Successful');
-                                                                        $('#rosterTable').load('adminAppointmentAjax.jsp #rosterTable');
-                                                                        $('#staffIDRoster').val('');
-                                                                        $('#userIDBefore').val('');
-                                                                        $('#roster_category').val('');
-                                                                        $('#startDateBeforeRoster').val('');
-                                                                        $('#startDateRoster').val('');
-                                                                        $('#endDateRoster').val('');
-                                                                        $('#startTimeRoster').val('');
-                                                                        $('#endTimeRoster').val('');
-                                                                        $('#statusRoster').val('');
-                                                                    } else {
-                                                                        alert('error on ajax');
-                                                                    }
-                                                                },
-                                                                error: function (err) {
-                                                                    console.log(err);
-                                                                }
-                                                            });
-                                                        });
-
-                                                        $('#cancelClinicDay').click(function (e) {
-                                                            e.preventDefault();
-                                                            $('#updateClinicDay').prop('disabled', true);
-                                                            $('#addClinicDay').prop('disabled', false);
-
-                                                            $('#state_').val('');
-                                                            $('#hfc_codeC').val('');
-                                                            $('#hfcBefore').val('');
-                                                            $('#discipline').val('');
-                                                            $('#disciplineBefore').val('');
-                                                            $('#subdisciplineBefore').val('');
-                                                            $('#subdiscipline').val('');
-                                                            $('#clinicDay').val('');
-                                                            $('#dayBefore').val('');
-                                                            $('#startdateC').val('');
-                                                            $('#enddateC').val('');
-                                                            $('#status').val('');
-                                                        });
-
-                                                        $('#updateClinicDay').click(function (e) {
-                                                            e.preventDefault();
-                                                            var starttimeClinic = ConvertTimeformat('24', $('#startdateC').val());
-                                                            var endtimeClinic = ConvertTimeformat('24', $('#enddateC').val());
-
-                                                            var _state = $('#state_').val();
-                                                            var _hfc = $('#hfc_codeC').val();
-                                                            var _hfcBefore = $('#hfcBefore').val();
-                                                            var _discipline = $('#discipline').val();
-                                                            var _disBefore = $('#disciplineBefore').val();
-                                                            var _subdisBefore = $('#subdisciplineBefore').val();
-                                                            var _subdiscipline = $('#subdiscipline').val();
-                                                            var _clinicDay = $('#clinicDay').val();
-                                                            var _dayBefore = $('#dayBefore').val();
-                                                            var _starttime = starttimeClinic;
-                                                            var _endtime = endtimeClinic;
-                                                            var _status = $('#status').val();
-
-                                                            var uClinicData = {
-                                                                state: _state,
-                                                                hfcCode: _hfc,
-                                                                hfcBefore: _hfcBefore,
-                                                                discipline: _discipline,
-                                                                disciplineBefore: _disBefore,
-                                                                subdiscipline: _subdiscipline,
-                                                                subdisciplineBefore: _subdisBefore,
-                                                                clinicDay: _clinicDay,
-                                                                starttime: _starttime,
-                                                                endtime: _endtime,
-                                                                daybefore: _dayBefore,
-                                                                status: _status
-                                                            };
-
-                                                            $.ajax({
-                                                                url: 'updateClinicDayAjax.jsp',
-                                                                method: 'post',
-                                                                data: uClinicData,
-                                                                timeout: 10000,
-                                                                success: function (result) {
-                                                                    console.log(result);
-                                                                    if (result.trim() === 'success') {
-                                                                        alert('Clinic day updated');
-                                                                        $('#clinicDayTable').load('adminAppointmentAjax.jsp #clinicDayTable');
-                                                                    } else {
-                                                                        alert('Error');
-                                                                    }
-                                                                }
-                                                            });
-                                                            console.log(uClinicData);
-                                                        });
-
-                                                        $('#clinicDayTable').on('click', '.clinic-editBtn', function (e) {
-
-                                                            e.preventDefault();
-                                                            $('#updateClinicDay').prop('disabled', false);
-                                                            $('#addClinicDay').prop('disabled', true);
-
-                                                            $('html,body').animate({
-                                                                scrollTop: $("#maintainclinicday").offset().top
-                                                            }, 500);
-
-                                                            var idName = $(this).get(0).id;
-                                                            var id = idName.split("|");
-                                                            var dataCA = $('#clinicData' + id[1]).val();
-                                                            var dataArry = dataCA.split("|");
-                                                            console.log(dataArry);
+                                                        var idName = $(this).get(0).id;
+                                                        var id = idName.split("|");
+                                                        var dataCA = $('#clinicData' + id[1]).val();
+                                                        var dataArry = dataCA.split("|");
+                                                        console.log(dataArry);
 
 
-                                                            $('#state_  option').filter(function () {
-                                                                return ($(this).text() === dataArry[0]); //To select Blue
-                                                            }).prop('selected', true);
+                                                        $('#state_  option').filter(function () {
+                                                            return ($(this).text() === dataArry[0]); //To select Blue
+                                                        }).prop('selected', true);
 
-                                                            showUser();
+                                                        showUser();
 
-                                                            var hfcData = {
-                                                                state: $('#state_').val(),
-                                                                hfcName: dataArry[1]
-                                                            };
+                                                        var hfcData = {
+                                                            state: $('#state_').val(),
+                                                            hfcName: dataArry[1]
+                                                        };
 
-                                                            selectHFC(hfcData);
-
-
-                                                            $('#discipline  option').filter(function () {
-                                                                return ($(this).text() === dataArry[2]); //To select Blue
-                                                            }).prop('selected', true);
-
-                                                            $('#subdiscipline  option').filter(function () {
-                                                                return ($(this).text() === dataArry[3]); //To select Blue
-                                                            }).prop('selected', true);
-
-                                                            var startTime = ConvertTimeformat12('12', dataArry[5]);
-                                                            var endTime = ConvertTimeformat12('12', dataArry[6]);
-
-                                                            $('#clinicDay').val(dataArry[4]);
-                                                            $('#startdateC').val(startTime);
-                                                            $('#enddateC').val(endTime);
-                                                            $('#status').val(dataArry[7]);
-
-                                                            $('#hfcBefore').val(dataArry[1]);
-                                                            $('#disciplineBefore').val(dataArry[2]);
-                                                            $('#subdisciplineBefore').val(dataArry[3]);
-                                                            $('#dayBefore').val(dataArry[4]);
-
-                                                        });
-
-                                                        $('#addClinicDay').click(function (e) {
-                                                            e.preventDefault();
-
-                                                            var starttimeClinic = ConvertTimeformat('24', $('#startdateC').val());
-                                                            var endtimeClinic = ConvertTimeformat('24', $('#enddateC').val());
-
-                                                            var _state = $('#state_').val();
-                                                            var _hfc = $('#hfc_codeC').val();
-                                                            var _discipline = $('#discipline').val();
-                                                            var _subdiscipline = $('#subdiscipline').val();
-                                                            var _clinicDay = $('#clinicDay').val();
-                                                            var _startTime = starttimeClinic;
-                                                            var _endTime = endtimeClinic;
-                                                            var _clinicStatus = $('#status').val();
+                                                        selectHFC(hfcData);
 
 
-                                                            var dataC = {
-                                                                state: _state,
-                                                                hfc: _hfc,
-                                                                discipline: _discipline,
-                                                                subdiscipline: _subdiscipline,
-                                                                clinic: _clinicDay,
-                                                                startTime: _startTime,
-                                                                endTime: _endTime,
-                                                                status: _clinicStatus
-                                                            };
-                                                            console.log(dataC);
-                                                            $.ajax({
-                                                                url: 'addClinicDay.jsp',
-                                                                method: 'post',
-                                                                timeout: 10000,
-                                                                data: dataC,
-                                                                success: function (result) {
-                                                                    var resultTrim = result.replace(";", "");
-                                                                    var response = resultTrim.trim();
-                                                                    if (response === "success") {
-                                                                        alert('Clinic Day added');
-                                                                        $('#clinicDayTable').load('adminAppointmentAjax.jsp #clinicDayTable');
-                                                                        $('#state_').val('');
-                                                                        $('#hfc_codeC').val('');
-                                                                        $('#hfcBefore').val('');
-                                                                        $('#discipline').val('');
-                                                                        $('#disciplineBefore').val('');
-                                                                        $('#subdisciplineBefore').val('');
-                                                                        $('#subdiscipline').val('');
-                                                                        $('#clinicDay').val('');
-                                                                        $('#dayBefore').val('');
-                                                                        $('#startdateC').val('');
-                                                                        $('#enddateC').val('');
-                                                                        $('#status').val('');
-                                                                    } else {
-                                                                        alert('error');
-                                                                    }
-                                                                },
-                                                                error: function (err) {
-                                                                    alert('Ajax error');
-                                                                }
-                                                            });
-                                                        });
+                                                        $('#discipline  option').filter(function () {
+                                                            return ($(this).text() === dataArry[2]); //To select Blue
+                                                        }).prop('selected', true);
+
+                                                        $('#subdiscipline  option').filter(function () {
+                                                            return ($(this).text() === dataArry[3]); //To select Blue
+                                                        }).prop('selected', true);
+
+                                                        var startTime = ConvertTimeformat12('12', dataArry[5]);
+                                                        var endTime = ConvertTimeformat12('12', dataArry[6]);
+
+                                                        $('#clinicDay').val(dataArry[4]);
+                                                        $('#startdateC').val(startTime);
+                                                        $('#enddateC').val(endTime);
+                                                        $('#status').val(dataArry[7]);
+
+                                                        $('#hfcBefore').val(dataArry[1]);
+                                                        $('#disciplineBefore').val(dataArry[2]);
+                                                        $('#subdisciplineBefore').val(dataArry[3]);
+                                                        $('#dayBefore').val(dataArry[4]);
+
+                                                    });
+
+                                                    $('#addClinicDay').click(function (e) {
+                                                        e.preventDefault();
+
+                                                        var starttimeClinic = ConvertTimeformat('24', $('#startdateC').val());
+                                                        var endtimeClinic = ConvertTimeformat('24', $('#enddateC').val());
+
+                                                        var _state = $('#state_').val();
+                                                        var _hfc = $('#hfc_codeC').val();
+                                                        var _discipline = $('#discipline').val();
+                                                        var _subdiscipline = $('#subdiscipline').val();
+                                                        var _clinicDay = $('#clinicDay').val();
+                                                        var _startTime = starttimeClinic;
+                                                        var _endTime = endtimeClinic;
+                                                        var _clinicStatus = $('#status').val();
 
 
-
-                                                        $('#holidayTable').on('click', '.editBtn', function () {
-                                                            $('#updateBtn').prop('disabled', false);
-                                                            $('html, body').animate({
-                                                                scrollTop: $("#maintainholiday").offset().top
-                                                            }, 500);
-
-                                                            var idName = $(this).get(0).id;
-                                                            var id = idName.split("|");
-                                                            console.log(id);
-
-                                                            var data = $('#holidayData' + id[1]).val();
-                                                            var dataArry = data.split("|");
-                                                            console.log(dataArry);
-
-                                                            var dateConvert = dataArry[1].split(' ');
-                                                            dateConvert = dateConvert[0].split('-');
-                                                            dateConvert = dateConvert[2] + "/" + dateConvert[1] + "/" + dateConvert[0];
-
-                                                            $('#state').val(dataArry[0]);
-                                                            $('#stateBefore').val(dataArry[0]);
-                                                            $('#startdate').val(dateConvert);
-                                                            $('#dateBefore').val(dataArry[1]);
-                                                            $('#desc').val(dataArry[2]);
-                                                            $('#appTo').val(dataArry[3]);
-                                                            $('#holidayStatus').val(dataArry[4]);
-                                                            $('#addHoliday').prop('disabled', true);
-                                                        });
-
-                                                        $('#updateBtn').click(function (e) {
-                                                            e.preventDefault();
-
-
-                                                            var _uState = $('#state').val();
-                                                            var _uStateBefore = $('#stateBefore').val();
-                                                            var _uDate = $('#startdate').datepicker().val();
-                                                            var _uDesc = $('#desc').val();
-                                                            var _uAppTo = $('#appTo').val();
-                                                            var _uStatus = $('#holidayStatus').val();
-                                                            var _uDateBefore = $('#dateBefore').val();
-
-                                                            _uDate = _uDate.split('/');
-                                                            _uDate = _uDate[2] + "-" + _uDate[1] + "-" + _uDate[0];
-
-                                                            var _upData = {
-                                                                state: _uState,
-                                                                stateBefore: _uStateBefore,
-                                                                dateBefore: _uDateBefore,
-                                                                date: _uDate,
-                                                                desc: _uDesc,
-                                                                appTo: _uAppTo,
-                                                                status: _uStatus
-                                                            };
-
-                                                            $.ajax({
-                                                                url: 'updateHoliday.jsp',
-                                                                type: 'post',
-                                                                data: _upData,
-                                                                timeout: 10000,
-                                                                success: function (result) {
-                                                                    var resultTrim = result.replace(";", "");
-                                                                    var response = resultTrim.trim();
-                                                                    if (response === 'success') {
-                                                                        alert('Holiday has successful update');
-                                                                        $('#holidayTable').load('adminAppointmentAjax.jsp #holidayTable');
-                                                                        $('#viewHoliday').load('adminAppointmentAjax.jsp #viewHoliday');
-                                                                    } else if (response === 'fail') {
-                                                                        alert('Update holiday fail due to the holiday data does not exist');
-                                                                    } else if (response === 'notSuccess') {
-                                                                        alert('Error occur, Holiday not be update');
-                                                                    }
-                                                                },
-                                                                error: function (err) {
+                                                        var dataC = {
+                                                            state: _state,
+                                                            hfc: _hfc,
+                                                            discipline: _discipline,
+                                                            subdiscipline: _subdiscipline,
+                                                            clinic: _clinicDay,
+                                                            startTime: _startTime,
+                                                            endTime: _endTime,
+                                                            status: _clinicStatus
+                                                        };
+                                                        console.log(dataC);
+                                                        $.ajax({
+                                                            url: 'addClinicDay.jsp',
+                                                            method: 'post',
+                                                            timeout: 10000,
+                                                            data: dataC,
+                                                            success: function (result) {
+                                                                var resultTrim = result.replace(";", "");
+                                                                var response = resultTrim.trim();
+                                                                if (response === "success") {
+                                                                    alert('Clinic Day added');
+                                                                    $('#clinicDayTable').load('adminAppointmentAjax.jsp #clinicDayTable');
+                                                                    $('#state_').val('');
+                                                                    $('#hfc_codeC').val('');
+                                                                    $('#hfcBefore').val('');
+                                                                    $('#discipline').val('');
+                                                                    $('#disciplineBefore').val('');
+                                                                    $('#subdisciplineBefore').val('');
+                                                                    $('#subdiscipline').val('');
+                                                                    $('#clinicDay').val('');
+                                                                    $('#dayBefore').val('');
+                                                                    $('#startdateC').val('');
+                                                                    $('#enddateC').val('');
+                                                                    $('#status').val('');
+                                                                } else {
                                                                     alert('error');
                                                                 }
-                                                            });
+                                                            },
+                                                            error: function (err) {
+                                                                alert('Ajax error');
+                                                            }
                                                         });
-
-                                                        $('#cancelBtn').click(function (e) {
-                                                            e.preventDefault();
-                                                            holidayEmptyField();
-                                                            $('#addHoliday').prop('disabled', false);
-                                                            $('#updateBtn').prop('disabled', true);
-                                                        });
-
-                                                        $('#addHoliday').click(function (e) {
-                                                            e.preventDefault();
-                                                            var _state = $('#state').val();
-                                                            var _date = $('#startdate').datepicker().val();
-                                                            var _desc = $('#desc').val();
-                                                            var _appTo = $('#appTo').val();
-
-                                                            _date = _date.split('/');
-                                                            _date = _date[2] + "-" + _date[1] + "-" + _date[0];
-
-                                                            var data = {
-                                                                state: _state,
-                                                                date: _date,
-                                                                desc: _desc,
-                                                                appTo: _appTo
-                                                            };
-
-                                                            $.ajax({
-                                                                url: 'addHolidayAjax.jsp',
-                                                                type: 'post',
-                                                                data: data,
-                                                                cache: false,
-                                                                timeout: 10000,
-                                                                success: function (result) {
-                                                                    console.log(result);
-                                                                    result = result.trim();
-                                                                    if (result === "success") {
-                                                                        alert('Holiday successful added');
-                                                                        $('#holidayTable').load('adminAppointmentAjax.jsp #holidayTable');
-                                                                        $('#viewHoliday').load('adminAppointmentAjax.jsp #viewHoliday');
-                                                                        $('#state').val("");
-                                                                        $('#startdate').datepicker().val("");
-                                                                        $('#desc').val("");
-                                                                        $('#appTo').val("");
-                                                                    } else if (result === "error")
-                                                                    {
-                                                                        alert('The Holiday already added');
-                                                                    } else {
-                                                                        alert('error');
-                                                                    }
-                                                                },
-                                                                error: function (err) {
-                                                                    console.log(err);
-                                                                }
-                                                            });
-                                                        });
-                                                        
-                                                          
                                                     });
-        </script>
-        <script src="calender/AppointmentCalendar.js" type="text/javascript"></script>
-    </body>
+
+
+
+                                                    $('#holidayTable').on('click', '.editBtn', function () {
+                                                        $('#updateBtn').prop('disabled', false);
+                                                        $('html, body').animate({
+                                                            scrollTop: $("#maintainholiday").offset().top
+                                                        }, 500);
+
+                                                        var idName = $(this).get(0).id;
+                                                        var id = idName.split("|");
+                                                        console.log(id);
+
+                                                        var data = $('#holidayData' + id[1]).val();
+                                                        var dataArry = data.split("|");
+                                                        console.log(dataArry);
+
+                                                        var dateConvert = dataArry[1].split(' ');
+                                                        dateConvert = dateConvert[0].split('-');
+                                                        dateConvert = dateConvert[2] + "/" + dateConvert[1] + "/" + dateConvert[0];
+
+                                                        $('#state').val(dataArry[0]);
+                                                        $('#stateBefore').val(dataArry[0]);
+                                                        $('#startdate').val(dateConvert);
+                                                        $('#dateBefore').val(dataArry[1]);
+                                                        $('#desc').val(dataArry[2]);
+                                                        $('#appTo').val(dataArry[3]);
+                                                        $('#holidayStatus').val(dataArry[4]);
+                                                        $('#addHoliday').prop('disabled', true);
+                                                    });
+
+                                                    $('#updateBtn').click(function (e) {
+                                                        e.preventDefault();
+
+
+                                                        var _uState = $('#state').val();
+                                                        var _uStateBefore = $('#stateBefore').val();
+                                                        var _uDate = $('#startdate').datepicker().val();
+                                                        var _uDesc = $('#desc').val();
+                                                        var _uAppTo = $('#appTo').val();
+                                                        var _uStatus = $('#holidayStatus').val();
+                                                        var _uDateBefore = $('#dateBefore').val();
+
+                                                        _uDate = _uDate.split('/');
+                                                        _uDate = _uDate[2] + "-" + _uDate[1] + "-" + _uDate[0];
+
+                                                        var _upData = {
+                                                            state: _uState,
+                                                            stateBefore: _uStateBefore,
+                                                            dateBefore: _uDateBefore,
+                                                            date: _uDate,
+                                                            desc: _uDesc,
+                                                            appTo: _uAppTo,
+                                                            status: _uStatus
+                                                        };
+
+                                                        $.ajax({
+                                                            url: 'updateHoliday.jsp',
+                                                            type: 'post',
+                                                            data: _upData,
+                                                            timeout: 10000,
+                                                            success: function (result) {
+                                                                var resultTrim = result.replace(";", "");
+                                                                var response = resultTrim.trim();
+                                                                if (response === 'success') {
+                                                                    alert('Holiday has successful update');
+                                                                    $('#holidayTable').load('adminAppointmentAjax.jsp #holidayTable');
+                                                                    $('#viewHoliday').load('adminAppointmentAjax.jsp #viewHoliday');
+                                                                } else if (response === 'fail') {
+                                                                    alert('Update holiday fail due to the holiday data does not exist');
+                                                                } else if (response === 'notSuccess') {
+                                                                    alert('Error occur, Holiday not be update');
+                                                                }
+                                                            },
+                                                            error: function (err) {
+                                                                alert('error');
+                                                            }
+                                                        });
+                                                    });
+
+                                                    $('#cancelBtn').click(function (e) {
+                                                        e.preventDefault();
+                                                        holidayEmptyField();
+                                                        $('#addHoliday').prop('disabled', false);
+                                                        $('#updateBtn').prop('disabled', true);
+                                                    });
+
+                                                    $('#addHoliday').click(function (e) {
+                                                        e.preventDefault();
+                                                        var _state = $('#state').val();
+                                                        var _date = $('#startdate').datepicker().val();
+                                                        var _desc = $('#desc').val();
+                                                        var _appTo = $('#appTo').val();
+
+                                                        _date = _date.split('/');
+                                                        _date = _date[2] + "-" + _date[1] + "-" + _date[0];
+
+                                                        var data = {
+                                                            state: _state,
+                                                            date: _date,
+                                                            desc: _desc,
+                                                            appTo: _appTo
+                                                        };
+
+                                                        $.ajax({
+                                                            url: 'addHolidayAjax.jsp',
+                                                            type: 'post',
+                                                            data: data,
+                                                            cache: false,
+                                                            timeout: 10000,
+                                                            success: function (result) {
+                                                                console.log(result);
+                                                                result = result.trim();
+                                                                if (result === "success") {
+                                                                    alert('Holiday successful added');
+                                                                    $('#holidayTable').load('adminAppointmentAjax.jsp #holidayTable');
+                                                                    $('#viewHoliday').load('adminAppointmentAjax.jsp #viewHoliday');
+                                                                    $('#state').val("");
+                                                                    $('#startdate').datepicker().val("");
+                                                                    $('#desc').val("");
+                                                                    $('#appTo').val("");
+                                                                } else if (result === "error")
+                                                                {
+                                                                    alert('The Holiday already added');
+                                                                } else {
+                                                                    alert('error');
+                                                                }
+                                                            },
+                                                            error: function (err) {
+                                                                console.log(err);
+                                                            }
+                                                        });
+                                                    });
+                                                    
+
+                                                   
+                                                });
+                                                
+
+    </script>
+    <script src="calender/AppointmentCalendar.js" type="text/javascript"></script>
+</body>
 </html>

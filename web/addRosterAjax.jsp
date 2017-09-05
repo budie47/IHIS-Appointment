@@ -41,8 +41,11 @@
     String sqlgetHoliday2 = "SELECT state_code, day_cd, discipline_cd, subdiscipline_cd, hfc_cd FROM pms_clinic_day WHERE hfc_cd = '"+hfc+"'";
     ArrayList<ArrayList<String>> dataGetStates = Conn.getData(sqlgetHoliday2);
     String dataStates = dataGetStates.get(0).get(0);
-    String dataDiscipline = dataGetStates.get(0).get(2);
-    String dataSubdiscipline = dataGetStates.get(0).get(3);
+    
+    String sqlGetDisSub = "SELECT `DISCIPLINE_CODE`,`SUBDISCIPLINE_CODE` FROM adm_user_access_role WHERE `USER_ID` = '"+staffID+"'";
+    ArrayList<ArrayList<String>> dataDISSUB = Conn.getData(sqlGetDisSub);
+    String dataDiscipline = dataDISSUB.get(0).get(0);
+    String dataSubdiscipline = dataDISSUB.get(0).get(1);
 
     String sqlCheckActiveRoster = "SELECT * FROM pms_duty_roster WHERE user_id = '"+staffID+"' And status = 'active'";
     ArrayList<ArrayList<String>> dataCheckActiveRoster = Conn.getData(sqlCheckActiveRoster);  
